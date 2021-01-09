@@ -32,68 +32,90 @@ let whitePieces = pieces.find((piece) => piece.color === "White");
 
 let cursorHover = false;
 
-// console.log(darkPieces);
-
 class Piece {
   constructor(piece, initialSpot, color) {
+    // piece = the name of the piece ("Bishop", "Pawn", etc..)
     this.piece = piece;
+    // Its color obviously (Black, white)
     this.color = color;
 
+    //initial spot keeps in memory the inital spot
     this.initialSpot = initialSpot;
+    // its the scale basicaly
     this.initialSpot.pos = size / 8;
 
+    // this.spot takes the relay in terms of positioning
     this.spot = this.initialSpot;
 
+    // finds the initial square on which the piece is on
     const currentSquare = squares.find(
       (square) =>
         square.coords.column === this.spot.column &&
         square.coords.sqIndex === this.spot.sqIndex
     );
 
+    this.isDead = false;
+
+    // keeps in memory useful information about the square
     this.square = {
       x: this.spot.pos * this.spot.column,
       y: this.spot.pos * this.spot.sqIndex,
       currentSquare,
     };
 
+    // its position on the canvas
     this.x = this.square.x + this.spot.pos / 2;
     this.y = this.square.y + this.spot.pos / 2;
 
+    // the scale of the image
     this.scale = 3;
+    // the center of the image
     this.imageX = this.x - this.spot.pos / this.scale;
     this.imageY = this.y - this.spot.pos / this.scale;
     this.imageSize = this.spot.pos / (this.scale * 0.5);
 
+    // finds the right image for the piece
     if (this.color === "Dark")
       this.img = darkPieces.images.find((image) => image.piece === this.piece);
     else
       this.img = whitePieces.images.find((image) => image.piece === this.piece);
   }
 
+  // Methods to show on the canvas if not dead
   show() {
-    // if (this.color === 255) stroke(0);
-    // else stroke(255);
-    // fill(this.color);
-    // ellipse(this.x, this.y, this.radius);
-
-    // imageMode(CENTER);
-    image(
-      this.img.image,
-      this.imageX,
-      this.imageY,
-      this.imageSize,
-      this.imageSize
-    );
-
-    stroke(255, 0, 0);
-    line(
-      this.square.x,
-      this.square.y,
-      this.square.x + this.spot.pos,
-      this.square.y + this.spot.pos
-    );
+    if (!this.isDead) {
+      image(
+        this.img.image,
+        this.imageX,
+        this.imageY,
+        this.imageSize,
+        this.imageSize
+      );
+    }
+    if (showHitbox) {
+      stroke(255, 0, 0);
+      line(
+        this.square.x,
+        this.square.y,
+        this.square.x + this.spot.pos,
+        this.square.y + this.spot.pos
+      );
+      stroke(0);
+    }
   }
 
+  hitbox(mX, mY) {
+    if (
+      mX > this.square.x &&
+      mX < this.square.x + this.spot.pos &&
+      mY > this.square.y &&
+      mY < this.square.y + this.spot.pos
+    ) {
+      return true;
+    }
+  }
+
+  //
   onSquare() {
     let square = squares.find(
       (sq) =>
@@ -109,40 +131,35 @@ class Piece {
     console.log(square);
   }
 
-  click(mX, mY) {
-    // const distance = dist(mX, mY, this.x, this.y);
-
-    // const col = this.color;
-
-    if (
-      mX > this.square.x &&
-      mX < this.square.x + this.spot.pos &&
-      mY > this.square.y &&
-      mY < this.square.y + this.spot.pos
-    ) {
-      // this.color = 56
-      console.log(this);
-      cursorHover = true;
-      console.log(cursorHover);
-    }
-
-    cursorHover = false;
-    // console.log(cursorHover);
+  hover(mX, mY) {
+    const hb = this.hitbox(mX, mY);
+    if (hb) cursorHover = true;
+    else cursorHover = false;
   }
 
-  // dblClick(mX, mY) {
-  //   const distance = dist(mX, mY, this.x, this.y);
-  //   let x = this.x;
-  //   let y = this.y;
+  click(mX, mY) {
+    const hb = this.hitbox(mX, mY);
 
-  //   if (this.radius > distance) {
-  //     this.lockOnMouse = true;
-  //   } else {
-  //     this.lockOnMouse = false;
-  //     this.x = x;
-  //     this.y = y;
-  //   }
-  // }
+    // this.square.currentSquare.highlightNeighbours = this.square.currentSquare
+    //   .highlightNeighbours
+    //   ? false
+    //   : true;
+    // console.log(this.square.currentSquare.highlightNeighbours);
+
+    if (hb) {
+      this.square.currentSquare.highlightNeighbours = true;
+      console.log(this.square.currentSquare.highlightNeighbours);
+    } else {
+      this.square.currentSquare.highlightNeighbours = false;
+      console.log(this.square.currentSquare.highlightNeighbours);
+    }
+
+    this.square.currentSquare.highlightNeigh(hb);
+  }
+
+  death() {
+    this.death = true;
+  }
 }
 
 class King extends Piece {

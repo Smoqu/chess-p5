@@ -1,5 +1,7 @@
 /// <reference path="./TSDef/p5.global-mode.d.ts" />
 
+let debug = false;
+
 let board = new Array(8);
 const size = 900;
 
@@ -7,6 +9,8 @@ const size = 900;
 let visualBoard;
 
 let buttonCoords;
+let buttonHitbox;
+let buttonDebug;
 
 let darkPawns;
 let whitePawns;
@@ -80,7 +84,13 @@ function setup() {
 
   // console.log(piecesImages);
 
+  buttonDebug = createButton("Debug");
   buttonCoords = createButton("Show coordinates");
+  buttonHitbox = createButton("Show hitboxes");
+}
+
+function mouseMoved() {
+  allPieces.forEach((piece) => piece.hover(mouseX, mouseY));
 }
 
 function draw() {
@@ -92,21 +102,29 @@ function draw() {
 
   cursor(ARROW);
 
+  if (debug) {
+    buttonCoords.show();
+    buttonHitbox.show();
+  } else {
+    buttonCoords.hide();
+    buttonHitbox.hide();
+  }
+
   // image(darkPieces.images[6], 250, 250);
 }
 
 function mousePressed() {
+  buttonDebug.mousePressed(() => (debug = !debug));
   buttonCoords.mousePressed(() => (showCoords = !showCoords));
+  buttonHitbox.mousePressed(() => (showHitbox = !showHitbox));
+
+  allPieces.forEach((piece) => piece.click(mouseX, mouseY));
   // b.cell(mouseX, mouseY);
 }
 
-function mouseMoved() {
-  allPieces.forEach((piece) => piece.click(mouseX, mouseY));
-}
-
-function doubleClicked() {
-  // piece.dblClick(mouseX, mouseY);
-}
+// function doubleClicked() {
+//   // piece.dblClick(mouseX, mouseY);
+// }
 
 function initPieces() {
   const initPawns = (color, sqIndex, col) => {

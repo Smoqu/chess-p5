@@ -1,6 +1,7 @@
 const colors = [1, 0, 1, 0, 1, 0, 1, 0];
 const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
 let showCoords = false;
+let showHitbox = false;
 
 class Square {
   constructor(column, sqIndex, color, letterCoord) {
@@ -21,25 +22,6 @@ class Square {
       hasPiece: false,
       Piece: null,
     };
-  }
-
-  click(mX, mY) {
-    const distance = dist(mX, mY, this.center.x, this.center.y);
-
-    // stroke(255, 0, 0);
-    // line(mX, mY, this.center.x, this.center.y);
-
-    if (
-      distance >= this.x &&
-      distance <= this.x + this.pos &&
-      distance >= this.y &&
-      distance <= this.y + this.pos
-    ) {
-      this.color = (255, 0, 0);
-      this.highlightNeighbours = true;
-    } else {
-      this.highlightNeighbours = false;
-    }
   }
 
   show() {
@@ -75,6 +57,18 @@ class Square {
         }
       }
     }
+  }
+
+  highlightNeigh(hb) {
+    this.meta.squareNeighbours.forEach((neigh) => {
+      const co = neigh.color;
+      if (this.highlightNeighbours && hb) {
+        // console.log("neigh:", neigh);
+        neigh.color = color(255, 0, 0);
+      } else {
+        neigh.color = co;
+      }
+    });
   }
 }
 
