@@ -142,7 +142,7 @@ function initPieces() {
       allPieces.push(p);
     }
 
-    color.forEach((pawn) => pawn.onSquare());
+    // color.forEach((pawn) => pawn.updateCurrentSquare());
   };
 
   initPawns(darkPawns, 1, "Dark");
@@ -161,7 +161,7 @@ function initPieces() {
       allPieces.push(b);
     }
 
-    color.forEach((bishop) => bishop.onSquare());
+    // color.forEach((bishop) => bishop.updateCurrentSquare());
   };
 
   initBishops(darkBishops, 0, "Dark");
@@ -179,7 +179,7 @@ function initPieces() {
       allPieces.push(k);
     }
 
-    color.forEach((knight) => knight.onSquare());
+    // color.forEach((knight) => knight.updateCurrentSquare());
   };
 
   initKnights(darkKnights, 0, "Dark");
@@ -197,7 +197,7 @@ function initPieces() {
       allPieces.push(r);
     }
 
-    color.forEach((rook) => rook.onSquare());
+    // color.forEach((rook) => rook.updateCurrentSquare());
   };
 
   initRooks(darkRooks, 0, "Dark");
