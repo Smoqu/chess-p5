@@ -47,44 +47,25 @@ class Piece {
     // this.spot takes the relay in terms of positioning
     this.spot = this.initialSpot;
 
-    // finds the initial square on which the piece is on
-    // const currentSquare = squares.find(
-    //   (square) =>
-    //     square.coords.column === this.spot.column &&
-    //     square.coords.sqIndex === this.spot.sqIndex
-    // );
-
     this.isDead = false;
-
-    // keeps in memory useful information about the square
-    // this.square = {
-    //   x: this.spot.pos * this.spot.column,
-    //   y: this.spot.pos * this.spot.sqIndex,
-    //   currentSquare,
-    // };
-
-    // this.square;
 
     this.square = this.updateCurrentSquare();
 
-    // its position on the canvas
-    // this.x = this.square.x + this.spot.pos / 2;
-    // this.y = this.square.y + this.spot.pos / 2;
     this.scale = 3;
+
+    this.clickedOn = false;
 
     let { x, y, imageX, imageY } = this.move();
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
-    // this.x = move.x;
-    // this.y = move.y;
-    // this.imageX = move.imageX;
-    // this.imageY = move.imageY;
 
     console.log(this.square);
-    // the scale of the image
-    // the center of the image
-    // this.imageX = this.x - this.spot.pos / this.scale;
-    // this.imageY = this.y - this.spot.pos / this.scale;
+
     this.imageSize = this.spot.pos / (this.scale * 0.5);
+
+    // [this.neighbours, this.enemies] = {neighbours, enemies};
+
+    this.neighbours = [];
+    this.enemies = [];
 
     // finds the right image for the piece
     if (this.color === "Dark")
@@ -117,21 +98,17 @@ class Piece {
   }
 
   hitbox(mX, mY) {
-    if (
+    return (
       mX > this.square.x &&
       mX < this.square.x + this.spot.pos &&
       mY > this.square.y &&
       mY < this.square.y + this.spot.pos
-    ) {
-      return true;
-    }
+    );
   }
 
   convertLetterCoord2Coords(letter, row) {
     const column = letters.indexOf(letter);
-    // console.log(column);
     const sqIndex = row - 1;
-    // console.log()
 
     return { column, sqIndex };
   }
@@ -161,12 +138,6 @@ class Piece {
     this.square.currentSquare.meta.hasPiece = false;
   }
 
-  hover(mX, mY) {
-    const hb = this.hitbox(mX, mY);
-    if (hb) cursorHover = true;
-    else cursorHover = false;
-  }
-
   move() {
     const x = this.square.x + this.spot.pos / 2;
     const y = this.square.y + this.spot.pos / 2;
@@ -179,51 +150,86 @@ class Piece {
   click(mX, mY) {
     const hb = this.hitbox(mX, mY);
 
-    // this.square.currentSquare.highlightNeighbours = this.square.currentSquare
-    //   .highlightNeighbours
-    //   ? false
-    //   : true;
-    // console.log(this.square.currentSquare.highlightNeighbours);
-
     if (hb) {
-      // this.square.currentSquare.highlightNeighbours = true;
-      // console.log(this.square.currentSquare.highlightNeighbours);
-      console.log(this);
-      const letterCoord = this.convertLetterCoord2Coords("F", 3);
-      this.spot.column = letterCoord.column;
-      this.spot.sqIndex = letterCoord.sqIndex;
-      this.spot.letter = letters[letterCoord.column];
-      this.updateFormerSquare();
-      this.square = this.updateCurrentSquare();
-      const { x, y, imageX, imageY } = this.move();
-      [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
-      console.log(this);
-    } else {
-      // this.square.currentSquare.highlightNeighbours = false;
-      // console.log(this.square.currentSquare.highlightNeighbours);
-    }
-
-    // this.square.currentSquare.highlightNeigh(hb);
+      this.clickedOn = true;
+      // canvas.cursor.style = "move";
+    } else this.clickedOn = false;
   }
 
   death() {
-    this.death = true;
+    this.isDead = true;
   }
-}
 
-class King extends Piece {
-  constructor(piece, initialSpot, color) {
-    super(piece, initialSpot, color);
+  changeSquare() {
+    console.log(this);
+    const letterCoord = this.convertLetterCoord2Coords("G", 3);
+    this.spot.column = letterCoord.column;
+    this.spot.sqIndex = letterCoord.sqIndex;
+    this.spot.letter = letters[letterCoord.column];
+    this.updateFormerSquare();
+    this.square = this.updateCurrentSquare();
+    const { x, y, imageX, imageY } = this.move();
+    [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
+    console.log(this);
+    // this.death();
+    console.log(this);
   }
-}
 
-class Queen extends Piece {
-  constructor(piece, initialSpot, color) {
-    super(piece, initialSpot, color);
+  findNeighbours() {
+    const n = this.square.currentSquare.meta.squareNeighbours.map(
+      (neighbour) => {
+        if (neighbour.meta.hasPiece) return neighbour.meta.Piece;
+      }
+    );
+
+    // console.log(n);
+    const enemies = this.square.currentSquare.meta.squareNeighbours.map(
+      (neighbour) => {
+        if (neighbour.meta.hasPiece && neighbour.meta.Piece.color != this.color)
+          return neighbour.meta.Piece;
+        else return null;
+      }
+    );
+
+    return { n, enemies };
+  }
+
+  hover(mX, mY) {
+    const hb = this.hitbox(mX, mY);
+    if (hb) {
+      cursorHover = true;
+      console.log(this);
+    } else cursorHover = false;
+
+    // else
+  }
+
+  drag(mX, mY) {
+    // const hb = this.hitbox(mX, mY);
+
+    if (this.clickedOn) {
+      canvas.style.cursor = "move";
+      this.x = mX;
+      this.imageX = this.x - this.spot.pos / this.scale;
+      this.y = mY;
+      this.imageY = this.y - this.spot.pos / this.scale;
+    }
+  }
+
+  released() {
+    canvas.style.cursor = "default";
+    const { x, y, imageX, imageY } = this.move();
+    [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
   }
 }
 
 class Bishop extends Piece {
+  constructor(piece, initialSpot, color) {
+    super(piece, initialSpot, color);
+  }
+}
+
+class King extends Piece {
   constructor(piece, initialSpot, color) {
     super(piece, initialSpot, color);
   }
@@ -239,6 +245,12 @@ class Pawn extends Piece {
   constructor(piece, initialSpot, color) {
     super(piece, initialSpot, color);
     this.color = color;
+  }
+}
+
+class Queen extends Piece {
+  constructor(piece, initialSpot, color) {
+    super(piece, initialSpot, color);
   }
 }
 

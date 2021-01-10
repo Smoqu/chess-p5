@@ -5,6 +5,8 @@ let debug = false;
 let board = new Array(8);
 const size = 900;
 
+let canvas;
+
 // let piece;
 let visualBoard;
 
@@ -51,16 +53,11 @@ function preload() {
 
 function setup() {
   createCanvas(size, size);
+  canvas = document.querySelector(".p5Canvas");
+
   background(50);
   for (let i = 0; i < 8; i++) board[i] = new Array(8);
   visualBoard = new Board();
-  // const test = {
-  //   pos: size / 8,
-  //   column: 2,
-  //   sqIndex: 0,
-  //   letter: "C",
-  // };
-  // piece = new Piece("Bishop", test, 255);
 
   darkPawns = darkPieces.pieces.Pawns;
   whitePawns = whitePieces.pieces.Pawns;
@@ -89,18 +86,14 @@ function setup() {
   buttonHitbox = createButton("Show hitboxes");
 }
 
-function mouseMoved() {
-  allPieces.forEach((piece) => piece.hover(mouseX, mouseY));
-}
-
 function draw() {
   visualBoard.show();
 
-  allPieces.forEach((piece) => piece.show());
-
-  if (cursorHover) cursor(HAND);
-
-  cursor(ARROW);
+  allPieces.forEach((piece) => {
+    const { n, enemies } = piece.findNeighbours();
+    [piece.neighbours, piece.enemies] = [n, enemies];
+    piece.show();
+  });
 
   if (debug) {
     buttonCoords.show();
@@ -122,9 +115,22 @@ function mousePressed() {
   // b.cell(mouseX, mouseY);
 }
 
+function mouseMoved() {
+  allPieces.forEach((piece) => piece.hover(mouseX, mouseY));
+  //
+}
+
 // function doubleClicked() {
 //   // piece.dblClick(mouseX, mouseY);
 // }
+
+function mouseDragged() {
+  allPieces.forEach((piece) => piece.drag(mouseX, mouseY));
+}
+
+function mouseReleased() {
+  allPieces.forEach((piece) => piece.released());
+}
 
 function initPieces() {
   const initPawns = (color, sqIndex, col) => {
