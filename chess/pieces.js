@@ -1,5 +1,7 @@
 let allPieces = [];
 
+let pieceClickedOn;
+
 let pieces = [
   {
     color: "Dark",
@@ -44,8 +46,10 @@ class Piece {
     // its the scale basicaly
     this.initialSpot.pos = size / 8;
 
+    Object.freeze(this.initialSpot);
+
     // this.spot takes the relay in terms of positioning
-    this.spot = this.initialSpot;
+    this.spot = { ...this.initialSpot };
 
     this.isDead = false;
 
@@ -54,6 +58,8 @@ class Piece {
     this.scale = 3;
 
     this.clickedOn = false;
+
+    this.availableMoves = [];
 
     let { x, y, imageX, imageY } = this.move();
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
@@ -94,6 +100,10 @@ class Piece {
         this.square.y + this.spot.pos
       );
       stroke(0);
+    }
+
+    if (pieceClickedOn === this) {
+      this.highlightPossibleMoves();
     }
   }
 
@@ -160,12 +170,12 @@ class Piece {
     this.isDead = true;
   }
 
-  changeSquare() {
+  changeSquare(column, sqIndex) {
     console.log(this);
-    const letterCoord = this.convertLetterCoord2Coords("G", 3);
-    this.spot.column = letterCoord.column;
-    this.spot.sqIndex = letterCoord.sqIndex;
-    this.spot.letter = letters[letterCoord.column];
+    // const letterCoord = this.convertLetterCoord2Coords("G", 3);
+    this.spot.column = column;
+    this.spot.sqIndex = sqIndex;
+    this.spot.letter = letters[column];
     this.updateFormerSquare();
     this.square = this.updateCurrentSquare();
     const { x, y, imageX, imageY } = this.move();
@@ -216,10 +226,66 @@ class Piece {
     }
   }
 
+  moves() {
+    return;
+  }
+
   released() {
     canvas.style.cursor = "default";
-    const { x, y, imageX, imageY } = this.move();
-    [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
+    if (this.availableMoves.length > 0) {
+      this.availableMoves.forEach((square) => {
+        if (
+          mouseX > square.x &&
+          mouseX < square.x + square.pos &&
+          mouseY > square.y &&
+          mouseY < square.y + square.pos &&
+          pieceClickedOn === this
+        ) {
+          this.changeSquare(square.coords.column, square.coords.sqIndex);
+          this.moves();
+        } else {
+          const { x, y, imageX, imageY } = this.move();
+          [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
+        }
+      });
+    } else {
+      const { x, y, imageX, imageY } = this.move();
+      [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
+    }
+  }
+
+  getPossibleMoves(squareNeighboursArray) {
+    const possibleMoves = [];
+    for (let neigh of squareNeighboursArray) {
+      if (!neigh.meta.hasPiece) {
+        possibleMoves.push(neigh);
+      }
+    }
+
+    if (possibleMoves.length > 0) return possibleMoves;
+    else return [];
+  }
+
+  highlightPossibleMoves() {
+    if (this.availableMoves.length > 0) {
+      for (let possibleMove of this.availableMoves) {
+        noStroke();
+        fill(255, 0, 0, 100);
+        rect(possibleMove.x, possibleMove.y, possibleMove.pos);
+      }
+    }
+  }
+
+  onClickUpdate() {
+    if (this.clickedOn) {
+      //   this.click(mouseX, mouseY)
+      console.log(this);
+
+      pieceClickedOn = this;
+    }
+    // this.availableMoves = this.getPossibleMoves(
+    //   this.square.currentSquare.meta.squareNeighbours
+    // );
   }
 }
 
@@ -233,7 +299,15 @@ class King extends Piece {
   constructor(piece, initialSpot, color) {
     super(piece, initialSpot, color);
   }
+
+  moves() {
+    this.availableMoves = this.allAroundMoves();
+    // console.log(this);
+  }
 }
+
+Object.assign(King.prototype, kingMoves);
+// console.log(King.prototype);
 
 class Knight extends Piece {
   constructor(piece, initialSpot, color) {
@@ -246,13 +320,25 @@ class Pawn extends Piece {
     super(piece, initialSpot, color);
     this.color = color;
   }
+
+  moves() {
+    this.availableMoves = this.forwardMove();
+  }
 }
+
+Object.assign(Pawn.prototype, pawnMoves);
 
 class Queen extends Piece {
   constructor(piece, initialSpot, color) {
     super(piece, initialSpot, color);
   }
+
+  moves() {
+    this.availableMoves = this.allAroundMoves();
+  }
 }
+
+Object.assign(Queen.prototype, queenMoves);
 
 class Rook extends Piece {
   constructor(piece, initialSpot, color) {

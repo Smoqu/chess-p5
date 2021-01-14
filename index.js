@@ -3,7 +3,7 @@
 let debug = false;
 
 let board = new Array(8);
-const size = 900;
+const size = 800;
 
 let canvas;
 
@@ -31,6 +31,22 @@ let whiteQueen;
 
 let darkKing;
 let whiteKing;
+
+function objectEquality(value1, value2) {
+  const lengthValue1 = Object.keys(value1).length;
+  const lengthValue2 = Object.keys(value2).length;
+
+  const v1 = Object.values(value1);
+  const v2 = Object.values(value2);
+
+  if (lengthValue1 === lengthValue2) {
+    for (let x = 0; x < v1.length; x++) {
+      if (v1[x] !== v2[x]) return false;
+    }
+  } else return false;
+
+  return true;
+}
 
 function preload() {
   const p = ["Bishop", "King", "Knight", "Pawn", "Queen", "Rook"];
@@ -79,6 +95,10 @@ function setup() {
 
   initPieces();
 
+  allPieces.forEach((piece) => {
+    piece.moves();
+  });
+
   // console.log(piecesImages);
 
   buttonDebug = createButton("Debug");
@@ -93,6 +113,7 @@ function draw() {
     const { n, enemies } = piece.findNeighbours();
     [piece.neighbours, piece.enemies] = [n, enemies];
     piece.show();
+    // if (piece.piece === "Pawn") piece.onClickUpdate(false, -1, -1);
   });
 
   if (debug) {
@@ -111,12 +132,16 @@ function mousePressed() {
   buttonCoords.mousePressed(() => (showCoords = !showCoords));
   buttonHitbox.mousePressed(() => (showHitbox = !showHitbox));
 
-  allPieces.forEach((piece) => piece.click(mouseX, mouseY));
+  allPieces.forEach((piece) => {
+    piece.click(mouseX, mouseY);
+    piece.onClickUpdate();
+    piece.moves();
+  });
   // b.cell(mouseX, mouseY);
 }
 
 function mouseMoved() {
-  allPieces.forEach((piece) => piece.hover(mouseX, mouseY));
+  // allPieces.forEach((piece) => piece.hover(mouseX, mouseY));
   //
 }
 

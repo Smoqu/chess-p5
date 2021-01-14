@@ -25,17 +25,45 @@ class Square {
   }
 
   show() {
+    stroke(0);
     fill(this.color);
     rect(this.x, this.y, this.pos);
 
     if (showCoords) {
       fill(0, 0, 255);
-      textSize(25);
+      textSize(this.pos / 8);
       text(
         `${this.letterCoord.letter}${this.letterCoord.number}`,
         this.pos * this.coords.column + this.pos / 2,
         this.pos * this.coords.sqIndex + this.pos / 2
       );
+    }
+
+    if (this.letterCoord.letter === "A" && this.letterCoord.number === 8) {
+      if (this.color === 0) fill(255);
+      else fill(0);
+      textSize(this.pos / 8);
+
+      text(
+        `${this.letterCoord.letter}${this.letterCoord.number}`,
+        this.x,
+        this.y + this.pos * 0.95
+      );
+    } else if (
+      this.letterCoord.letter === "A" &&
+      this.letterCoord.number !== 8
+    ) {
+      if (this.color === 0) fill(255);
+      else fill(0);
+
+      text(this.letterCoord.number, this.x, this.y + this.pos * 0.95);
+    }
+
+    if (this.letterCoord.number === 8 && this.letterCoord.letter !== "A") {
+      textSize(this.pos / 8);
+      if (this.color === 0) fill(255);
+      else fill(0);
+      text(this.letterCoord.letter, this.x, this.y + this.pos * 0.95);
     }
   }
 
