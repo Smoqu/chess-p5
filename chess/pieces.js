@@ -61,10 +61,14 @@ class Piece {
 
     this.availableMoves = [];
 
+    this.history = [];
+
+    this.history.push({ ...this.spot });
+
     let { x, y, imageX, imageY } = this.move();
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
 
-    console.log(this.square);
+    // console.log(this.square);
 
     this.imageSize = this.spot.pos / (this.scale * 0.5);
 
@@ -171,8 +175,6 @@ class Piece {
   }
 
   changeSquare(column, sqIndex) {
-    console.log(this);
-    // const letterCoord = this.convertLetterCoord2Coords("G", 3);
     this.spot.column = column;
     this.spot.sqIndex = sqIndex;
     this.spot.letter = letters[column];
@@ -180,29 +182,26 @@ class Piece {
     this.square = this.updateCurrentSquare();
     const { x, y, imageX, imageY } = this.move();
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
-    console.log(this);
-    // this.death();
-    console.log(this);
   }
 
-  findNeighbours() {
-    const n = this.square.currentSquare.meta.squareNeighbours.map(
-      (neighbour) => {
-        if (neighbour.meta.hasPiece) return neighbour.meta.Piece;
-      }
-    );
+  // findNeighbours() {
+  //   const n = this.square.currentSquare.meta.squareNeighbours.map(
+  //     (neighbour) => {
+  //       if (neighbour.meta.hasPiece) return neighbour.meta.Piece;
+  //     }
+  //   );
 
-    // console.log(n);
-    const enemies = this.square.currentSquare.meta.squareNeighbours.map(
-      (neighbour) => {
-        if (neighbour.meta.hasPiece && neighbour.meta.Piece.color != this.color)
-          return neighbour.meta.Piece;
-        else return null;
-      }
-    );
+  //   // console.log(n);
+  //   const enemies = this.square.currentSquare.meta.squareNeighbours.map(
+  //     (neighbour) => {
+  //       if (neighbour.meta.hasPiece && neighbour.meta.Piece.color != this.color)
+  //         return neighbour.meta.Piece;
+  //       else return null;
+  //     }
+  //   );
 
-    return { n, enemies };
-  }
+  //   return { n, enemies };
+  // }
 
   hover(mX, mY) {
     const hb = this.hitbox(mX, mY);
@@ -243,6 +242,8 @@ class Piece {
         ) {
           this.changeSquare(square.coords.column, square.coords.sqIndex);
           this.moves();
+          this.history.push({ ...this.spot });
+          pieceClickedOn = null;
         } else {
           const { x, y, imageX, imageY } = this.move();
           [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
@@ -256,11 +257,21 @@ class Piece {
 
   getPossibleMoves(squareNeighboursArray) {
     const possibleMoves = [];
+    const enemies = [];
+    const allies = [];
     for (let neigh of squareNeighboursArray) {
       if (!neigh.meta.hasPiece) {
         possibleMoves.push(neigh);
+      } else if (neigh.meta.Piece !== null) {
+        if (neigh.meta.Piece.color !== this.color) {
+          possibleMoves.push(neigh);
+          enemies.push(neigh);
+        } else allies.push(neigh);
       }
     }
+
+    this.enemies = enemies;
+    this.neighbours = allies;
 
     if (possibleMoves.length > 0) return possibleMoves;
     else return [];
@@ -293,7 +304,13 @@ class Bishop extends Piece {
   constructor(piece, initialSpot, color) {
     super(piece, initialSpot, color);
   }
+
+  moves() {
+    this.availableMoves = this.diagonalMoves();
+  }
 }
+
+Object.assign(Bishop.prototype, bishopMoves);
 
 class King extends Piece {
   constructor(piece, initialSpot, color) {
@@ -312,6 +329,33 @@ Object.assign(King.prototype, kingMoves);
 class Knight extends Piece {
   constructor(piece, initialSpot, color) {
     super(piece, initialSpot, color);
+  }
+
+  moves() {
+    const m = squares.filter((square) => {
+      if (
+        (square.coords.column === this.spot.column - 1 &&
+          square.coords.sqIndex === this.spot.sqIndex - 2) ||
+        (square.coords.column === this.spot.column - 2 &&
+          square.coords.sqIndex === this.spot.sqIndex - 1) ||
+        (square.coords.column === this.spot.column - 2 &&
+          square.coords.sqIndex === this.spot.sqIndex + 1) ||
+        (square.coords.column === this.spot.column - 1 &&
+          square.coords.sqIndex === this.spot.sqIndex + 2) ||
+        (square.coords.column === this.spot.column + 1 &&
+          square.coords.sqIndex === this.spot.sqIndex - 2) ||
+        (square.coords.column === this.spot.column + 2 &&
+          square.coords.sqIndex === this.spot.sqIndex - 1) ||
+        (square.coords.column === this.spot.column + 2 &&
+          square.coords.sqIndex === this.spot.sqIndex + 1) ||
+        (square.coords.column === this.spot.column + 1 &&
+          square.coords.sqIndex === this.spot.sqIndex + 2)
+      ) {
+        return square;
+      }
+    });
+
+    this.availableMoves = this.getPossibleMoves(m);
   }
 }
 
@@ -334,7 +378,7 @@ class Queen extends Piece {
   }
 
   moves() {
-    this.availableMoves = this.allAroundMoves();
+    this.availableMoves = this.allAroundMoves().concat(this.diagonalMoves());
   }
 }
 

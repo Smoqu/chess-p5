@@ -32,22 +32,6 @@ let whiteQueen;
 let darkKing;
 let whiteKing;
 
-function objectEquality(value1, value2) {
-  const lengthValue1 = Object.keys(value1).length;
-  const lengthValue2 = Object.keys(value2).length;
-
-  const v1 = Object.values(value1);
-  const v2 = Object.values(value2);
-
-  if (lengthValue1 === lengthValue2) {
-    for (let x = 0; x < v1.length; x++) {
-      if (v1[x] !== v2[x]) return false;
-    }
-  } else return false;
-
-  return true;
-}
-
 function preload() {
   const p = ["Bishop", "King", "Knight", "Pawn", "Queen", "Rook"];
   for (let i = 0; i < 12; i++) {
@@ -110,8 +94,6 @@ function draw() {
   visualBoard.show();
 
   allPieces.forEach((piece) => {
-    const { n, enemies } = piece.findNeighbours();
-    [piece.neighbours, piece.enemies] = [n, enemies];
     piece.show();
     // if (piece.piece === "Pawn") piece.onClickUpdate(false, -1, -1);
   });
