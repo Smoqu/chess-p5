@@ -33,7 +33,7 @@ let darkKing;
 let whiteKing;
 
 function preload() {
-  const p = ["Bishop", "King", "Knight", "Pawn", "Queen", "Rook"];
+  const p = ["bishop", "king", "knight", "pawn", "queen", "rook"];
   for (let i = 0; i < 12; i++) {
     if (i <= 5) {
       let piece = i;
