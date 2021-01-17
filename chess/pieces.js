@@ -79,9 +79,9 @@ class Piece {
 
     // finds the right image for the piece
     if (this.color === "Dark")
-      this.img = darkPieces.images.find((image) => image.piece === this.piece);
+      this.img = darkPieces.images.find((image) => image.piece === this.piece.toLowerCase());
     else
-      this.img = whitePieces.images.find((image) => image.piece === this.piece);
+      this.img = whitePieces.images.find((image) => image.piece === this.piece.toLowerCase());
   }
 
   // Methods to show on the canvas if not dead
