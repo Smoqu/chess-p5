@@ -63,7 +63,11 @@ class Piece {
 
     this.history = [];
 
-    this.history.push({ ...this.spot });
+    this.history.push({
+      letter: this.spot.letter,
+      row: this.spot.sqIndex + 1,
+      square: this.square,
+    });
 
     let { x, y, imageX, imageY } = this.move();
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
@@ -72,11 +76,6 @@ class Piece {
 
     this.imageSize = this.spot.pos / (this.scale * 0.5);
 
-    // [this.neighbours, this.enemies] = {neighbours, enemies};
-
-    this.neighbours = [];
-    this.enemies = [];
-
     // finds the right image for the piece
     if (this.color === "Dark")
       this.img = darkPieces.images.find((image) => image.piece === this.piece.toLowerCase());
@@ -84,7 +83,7 @@ class Piece {
       this.img = whitePieces.images.find((image) => image.piece === this.piece.toLowerCase());
   }
 
-  // Methods to show on the canvas if not dead
+  // Method to show on the canvas, if not dead
   show() {
     if (!this.isDead) {
       image(
@@ -127,6 +126,11 @@ class Piece {
     return { column, sqIndex };
   }
 
+  takes(square) {
+    const index = allPieces.findIndex((p) => p === square.meta.Piece);
+    delete allPieces[index];
+  }
+
   //
   updateCurrentSquare() {
     let square = squares.find(
@@ -135,7 +139,15 @@ class Piece {
         this.spot.sqIndex === sq.coords.sqIndex
     );
 
-    if (square != "undefined") {
+    // TODO: Idk, there's some bugs espacially when it has something to do with the King.
+    if (square !== "undefined") {
+      if (square.meta.hasPiece) {
+        if (square.meta.Piece.piece !== "King") {
+          this.takes(square);
+        } else {
+          return this.square;
+        }
+      }
       square.meta.Piece = this;
       square.meta.hasPiece = true;
       const x = this.spot.pos * this.spot.column;
@@ -161,6 +173,35 @@ class Piece {
     return { x, y, imageX, imageY };
   }
 
+  check() {
+    let king;
+
+    if (this.piece !== "King") {
+      for (let move of this.availableMoves) {
+        if (move.meta.Piece !== null) {
+          if (move.meta.Piece.piece === "King") {
+            king = move.meta.Piece;
+          }
+        }
+      }
+    }
+
+    if (king !== undefined) {
+      king.inCheck = true;
+      king.inCh();
+
+      setTimeout(() => {
+        for (let move of this.availableMoves) {
+          king.availableMoves = king.availableMoves.filter((m) => m !== move);
+        }
+      }, 0.01);
+    }
+  }
+
+  // takes() {
+
+  // }
+
   click(mX, mY) {
     const hb = this.hitbox(mX, mY);
 
@@ -184,24 +225,18 @@ class Piece {
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
   }
 
-  // findNeighbours() {
-  //   const n = this.square.currentSquare.meta.squareNeighbours.map(
-  //     (neighbour) => {
-  //       if (neighbour.meta.hasPiece) return neighbour.meta.Piece;
-  //     }
-  //   );
+  getPossibleMoves(array) {
+    const possibleMoves = [];
+    for (let neigh of array) {
+      if (!neigh.meta.hasPiece) {
+        possibleMoves.push(neigh);
+      } else {
+        if (neigh.meta.Piece.color !== this.color) possibleMoves.push(neigh);
+      }
+    }
 
-  //   // console.log(n);
-  //   const enemies = this.square.currentSquare.meta.squareNeighbours.map(
-  //     (neighbour) => {
-  //       if (neighbour.meta.hasPiece && neighbour.meta.Piece.color != this.color)
-  //         return neighbour.meta.Piece;
-  //       else return null;
-  //     }
-  //   );
-
-  //   return { n, enemies };
-  // }
+    return possibleMoves;
+  }
 
   hover(mX, mY) {
     const hb = this.hitbox(mX, mY);
@@ -209,13 +244,9 @@ class Piece {
       cursorHover = true;
       console.log(this);
     } else cursorHover = false;
-
-    // else
   }
 
   drag(mX, mY) {
-    // const hb = this.hitbox(mX, mY);
-
     if (this.clickedOn) {
       canvas.style.cursor = "move";
       this.x = mX;
@@ -242,7 +273,12 @@ class Piece {
         ) {
           this.changeSquare(square.coords.column, square.coords.sqIndex);
           this.moves();
-          this.history.push({ ...this.spot });
+          this.history.push({
+            letter: this.spot.letter,
+            row: this.spot.sqIndex + 1,
+            square: this.square,
+          });
+          this.check();
           pieceClickedOn = null;
         } else {
           const { x, y, imageX, imageY } = this.move();
@@ -253,28 +289,6 @@ class Piece {
       const { x, y, imageX, imageY } = this.move();
       [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
     }
-  }
-
-  getPossibleMoves(squareNeighboursArray) {
-    const possibleMoves = [];
-    const enemies = [];
-    const allies = [];
-    for (let neigh of squareNeighboursArray) {
-      if (!neigh.meta.hasPiece) {
-        possibleMoves.push(neigh);
-      } else if (neigh.meta.Piece !== null) {
-        if (neigh.meta.Piece.color !== this.color) {
-          possibleMoves.push(neigh);
-          enemies.push(neigh);
-        } else allies.push(neigh);
-      }
-    }
-
-    this.enemies = enemies;
-    this.neighbours = allies;
-
-    if (possibleMoves.length > 0) return possibleMoves;
-    else return [];
   }
 
   highlightPossibleMoves() {
@@ -289,14 +303,10 @@ class Piece {
 
   onClickUpdate() {
     if (this.clickedOn) {
-      //   this.click(mouseX, mouseY)
       console.log(this);
 
       pieceClickedOn = this;
     }
-    // this.availableMoves = this.getPossibleMoves(
-    //   this.square.currentSquare.meta.squareNeighbours
-    // );
   }
 }
 
@@ -306,7 +316,13 @@ class Bishop extends Piece {
   }
 
   moves() {
-    this.availableMoves = this.diagonalMoves();
+    const { topLeft, topRight, bottomRight, bottomLeft } = this.diagonalMoves();
+    this.availableMoves = [
+      ...topLeft,
+      ...topRight,
+      ...bottomRight,
+      ...bottomLeft,
+    ];
   }
 }
 
@@ -315,11 +331,18 @@ Object.assign(Bishop.prototype, bishopMoves);
 class King extends Piece {
   constructor(piece, initialSpot, color) {
     super(piece, initialSpot, color);
+
+    this.inCheck = false;
   }
 
   moves() {
     this.availableMoves = this.allAroundMoves();
     // console.log(this);
+  }
+
+  inCh() {
+    if (this.inCheck) console.log("CHECK");
+    this.inCheck = false;
   }
 }
 
@@ -365,12 +388,54 @@ class Pawn extends Piece {
     this.color = color;
   }
 
+  forwardMove() {
+    const order = this.color === "White" ? -1 : 1;
+    let m = [];
+
+    const forSquare = board[this.spot.column][this.spot.sqIndex + 1 * order];
+    if (forSquare !== undefined) m.push(forSquare);
+
+    if (this.history.length === 1 && !m[0].meta.hasPiece) {
+      const secondSquare =
+        board[this.spot.column][this.spot.sqIndex + 2 * order];
+      if (secondSquare !== undefined) m.push(secondSquare);
+    }
+
+    m = m.filter((square) => !square.meta.hasPiece);
+
+    let areEnemies;
+
+    if (this.color === "White") {
+      areEnemies = [
+        this.square.currentSquare.meta.squareNeighbours[0],
+        this.square.currentSquare.meta.squareNeighbours[5],
+      ];
+    } else {
+      areEnemies = [
+        this.square.currentSquare.meta.squareNeighbours[2],
+        this.square.currentSquare.meta.squareNeighbours[7],
+      ];
+    }
+
+    const enemies = areEnemies.filter((square) => {
+      if (square !== undefined && square.meta.hasPiece) {
+        if (square.meta.Piece.color !== this.color) return square;
+      }
+    });
+
+    if (pieceClickedOn === this)
+      console.log(enemies, areEnemies, 4 + 4 * order);
+
+    m.push(...enemies);
+    // console.log(enemies);
+
+    return m;
+  }
+
   moves() {
     this.availableMoves = this.forwardMove();
   }
 }
-
-Object.assign(Pawn.prototype, pawnMoves);
 
 class Queen extends Piece {
   constructor(piece, initialSpot, color) {
@@ -378,7 +443,20 @@ class Queen extends Piece {
   }
 
   moves() {
-    this.availableMoves = this.allAroundMoves().concat(this.diagonalMoves());
+    const { topLeft, topRight, bottomRight, bottomLeft } = this.diagonalMoves();
+    console.log(this.diagonalMoves());
+    const diagonalMoves = [
+      ...topLeft,
+      ...topRight,
+      ...bottomRight,
+      ...bottomLeft,
+    ];
+
+    const { horz1, horz2, ver1, ver2 } = this.horizontalAndVerticalMoves();
+    const horizontalAndVerticalMoves = [...horz1, ...horz2, ...ver1, ...ver2];
+
+    const m = [...diagonalMoves, ...horizontalAndVerticalMoves];
+    this.availableMoves = [...new Set(m)];
   }
 }
 
@@ -388,4 +466,12 @@ class Rook extends Piece {
   constructor(piece, initialSpot, color) {
     super(piece, initialSpot, color);
   }
+
+  moves() {
+    const { horz1, horz2, ver1, ver2 } = this.horizontalAndVerticalMoves();
+    const horizontalAndVerticalMoves = [...horz1, ...horz2, ...ver1, ...ver2];
+    this.availableMoves = horizontalAndVerticalMoves;
+  }
 }
+
+Object.assign(Rook.prototype, rookMoves);

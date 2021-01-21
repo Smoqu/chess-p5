@@ -2,111 +2,66 @@ function allAroundMoves() {
   return this.getPossibleMoves(this.square.currentSquare.meta.squareNeighbours);
 }
 
-function forwardMove() {
-  const order = this.color === "White" ? -1 : 1;
-  let m = [];
-  m.push(
-    this.square.currentSquare.meta.squareNeighbours.find((square) => {
-      return (
-        square.coords.column === this.spot.column &&
-        square.coords.sqIndex === this.spot.sqIndex + 1 * order
-      );
-    })
-  );
+function horizontalAndVerticalMoves() {
+  const m = [];
 
-  if (this.history.length === 1) {
-    if (!m.every((square) => square.meta.hasPiece)) {
-      m.push(
-        squares.find((square) => {
-          return (
-            square.coords.column === this.spot.column &&
-            square.coords.sqIndex === this.spot.sqIndex + 2 * order
-          );
-        })
-      );
+  function horizontal(piece, signColumn) {
+    const sq = [];
+    for (let i = 1; i < 9; i++) {
+      const column = board[piece.spot.column + signColumn * i];
+      if (column === undefined) break;
+      const row = column[piece.spot.sqIndex];
+      if (row.meta.hasPiece) {
+        if (row.meta.Piece.color === piece.color) break;
+        else {
+          m.push(row);
+          sq.push(row);
+          break;
+        }
+      }
+
+      m.push(row);
+      sq.push(row);
     }
+    return sq;
   }
 
-  m = m.filter((square) => !square.meta.hasPiece);
+  function vertical(piece, signRow) {
+    const sq = [];
+    for (let i = 1; i < 9; i++) {
+      const column = board[piece.spot.column];
+      if (column === undefined) break;
+      const row = column[piece.spot.sqIndex + signRow * i];
+      if (row === undefined) break;
+      if (row.meta.hasPiece) {
+        if (row.meta.Piece.color === piece.color) break;
+        else {
+          m.push(row);
+          sq.push(row);
+          break;
+        }
+      }
 
-  return this.getPossibleMoves(m);
+      m.push(row);
+      sq.push(row);
+    }
+    return sq;
+  }
+
+  const horz1 = horizontal(this, 1);
+  const horz2 = horizontal(this, -1);
+  const ver1 = vertical(this, -1);
+  const ver2 = vertical(this, 1);
+
+  return { horz1, horz2, ver1, ver2 };
 }
-
-// function horizontalAndVerticalMove() {
-//     squares.forEach(square => {
-//         if (square.coords.column )
-//     })
-// }
 
 function diagonalMoves() {
   const m = [];
 
-  // TOP LEFT = -1 -1
-  // for (let tL = 1; tL < 9; tL++) {
-  //   const column = board[this.spot.column - tL];
-  //   if (column === undefined) break;
-  //   const row = column[this.spot.sqIndex - tL];
-  //   if (row === undefined) break;
-  //   if (row.meta.hasPiece) {
-  //     if (row.meta.Piece.color === this.color) break;
-  //     else {
-  //       m.push(row);
-  //       break;
-  //     }
-  //   }
-  //   m.push(row);
-  // }
-
-  // // TOP RIGHT = +1 -1
-  // for (let tL = 1; tL < 9; tL++) {
-  //   const column = board[this.spot.column + tL];
-  //   if (column === undefined) break;
-  //   const row = column[this.spot.sqIndex - tL];
-  //   if (row === undefined) break;
-
-  //   if (row.meta.hasPiece) {
-  //     if (row.meta.Piece.color === this.color) break;
-  //     else {
-  //       m.push(row);
-  //       break;
-  //     }
-  //   }
-  //   m.push(row);
-  // }
-
-  // // BOTTOM RIGHT = +1 +1
-  // for (let tL = 1; tL < 9; tL++) {
-  //   const column = board[this.spot.column + tL];
-  //   if (column === undefined) break;
-  //   const row = column[this.spot.sqIndex + tL];
-  //   if (row === undefined) break;
-  //   if (row.meta.hasPiece) {
-  //     if (row.meta.Piece.color === this.color) break;
-  //     else {
-  //       m.push(row);
-  //       break;
-  //     }
-  //   }
-
-  //   m.push(row);
-  // }
-
-  // for (let tL = 1; tL < 9; tL++) {
-  //   const column = board[this.spot.column - tL];
-  //   if (column === undefined) break;
-  //   const row = column[this.spot.sqIndex + tL];
-  //   if (row === undefined) break;
-  //   if (row.meta.hasPiece) {
-  //     if (row.meta.Piece.color === this.color) break;
-  //     else {
-  //       m.push(row);
-  //       break;
-  //     }
-  //   }
-  //   m.push(row);
-  // }
-
   function initDiagonals(piece, signColumn, signRow) {
+    const sq = [];
+
     for (let tL = 1; tL < 9; tL++) {
       const column = board[piece.spot.column + signColumn * tL];
       if (column === undefined) break;
@@ -116,36 +71,37 @@ function diagonalMoves() {
         if (row.meta.Piece.color === piece.color) break;
         else {
           m.push(row);
+          sq.push(row);
           break;
         }
       }
       m.push(row);
+      sq.push(row);
     }
+    return sq;
   }
 
-  initDiagonals(this, -1, -1);
-  initDiagonals(this, 1, -1);
-  initDiagonals(this, 1, 1);
-  initDiagonals(this, -1, 1);
+  const topLeft = initDiagonals(this, -1, -1);
+  const topRight = initDiagonals(this, 1, -1);
+  const bottomRight = initDiagonals(this, 1, 1);
+  const bottomLeft = initDiagonals(this, -1, 1);
 
-  // console.log(topLeft);
-
-  return m;
+  return { topLeft, topRight, bottomRight, bottomLeft };
 }
 
 const kingMoves = {
   allAroundMoves,
 };
 
-const pawnMoves = {
-  forwardMove,
-};
-
 const queenMoves = {
-  allAroundMoves,
   diagonalMoves,
+  horizontalAndVerticalMoves,
 };
 
 const bishopMoves = {
   diagonalMoves,
+};
+
+const rookMoves = {
+  horizontalAndVerticalMoves,
 };

@@ -95,6 +95,8 @@ function draw() {
 
   allPieces.forEach((piece) => {
     piece.show();
+    // piece.moves();
+    // piece.check();
     // if (piece.piece === "Pawn") piece.onClickUpdate(false, -1, -1);
   });
 
@@ -118,6 +120,7 @@ function mousePressed() {
     piece.click(mouseX, mouseY);
     piece.onClickUpdate();
     piece.moves();
+    piece.check();
   });
   // b.cell(mouseX, mouseY);
 }
@@ -136,7 +139,11 @@ function mouseDragged() {
 }
 
 function mouseReleased() {
-  allPieces.forEach((piece) => piece.released());
+  allPieces.forEach((piece) => {
+    piece.released();
+    piece.moves();
+    piece.check();
+  });
 }
 
 function initPieces() {
