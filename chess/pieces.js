@@ -2,6 +2,8 @@ let allPieces = [];
 
 let pieceClickedOn;
 
+let lastPiece;
+
 let pieces = [
   {
     color: "Dark",
@@ -63,6 +65,9 @@ class Piece {
 
     this.history = [];
 
+    this.player = null;
+    this.adversary = null;
+
     this.history.push({
       letter: this.spot.letter,
       row: this.spot.sqIndex + 1,
@@ -107,6 +112,10 @@ class Piece {
 
     if (pieceClickedOn === this) {
       this.highlightPossibleMoves();
+    }
+
+    if (lastPiece === this) {
+      this.highlightLastMove();
     }
   }
 
@@ -260,6 +269,22 @@ class Piece {
     return;
   }
 
+  highlightLastMove() {
+    if (lastPiece === this) {
+      const last = this.history.slice(-2);
+      console.log(last);
+      for (let el of last) {
+        noStroke();
+        fill(255, 255, 0, 100);
+        rect(
+          el.square.currentSquare.x,
+          el.square.currentSquare.y,
+          el.square.currentSquare.pos
+        );
+      }
+    }
+  }
+
   released() {
     canvas.style.cursor = "default";
     if (this.availableMoves.length > 0) {
@@ -269,7 +294,8 @@ class Piece {
           mouseX < square.x + square.pos &&
           mouseY > square.y &&
           mouseY < square.y + square.pos &&
-          pieceClickedOn === this
+          pieceClickedOn === this &&
+          turn === this.player
         ) {
           this.changeSquare(square.coords.column, square.coords.sqIndex);
           this.moves();
@@ -280,6 +306,8 @@ class Piece {
           });
           this.check();
           pieceClickedOn = null;
+          lastPiece = this;
+          turn = this.adversary;
         } else {
           const { x, y, imageX, imageY } = this.move();
           [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
