@@ -90,6 +90,13 @@ class Piece {
 
   // Method to show on the canvas, if not dead
   show() {
+    if (pieceClickedOn === this) {
+      this.highlightPossibleMoves();
+    }
+
+    if (lastPiece === this) {
+      this.highlightLastMove();
+    }
     if (!this.isDead) {
       image(
         this.img.image,
@@ -108,14 +115,6 @@ class Piece {
         this.square.y + this.spot.pos
       );
       stroke(0);
-    }
-
-    if (pieceClickedOn === this) {
-      this.highlightPossibleMoves();
-    }
-
-    if (lastPiece === this) {
-      this.highlightLastMove();
     }
   }
 
