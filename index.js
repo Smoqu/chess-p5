@@ -119,6 +119,8 @@ function mousePressed() {
   allPieces.forEach((piece) => {
     piece.click(mouseX, mouseY);
     piece.onClickUpdate();
+    piece.moves();
+    piece.check();
   });
   // b.cell(mouseX, mouseY);
 }

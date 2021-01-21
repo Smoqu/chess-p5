@@ -83,7 +83,7 @@ class Piece {
       this.img = whitePieces.images.find((image) => image.piece === this.piece);
   }
 
-  // Methods to show on the canvas if not dead
+  // Method to show on the canvas, if not dead
   show() {
     if (!this.isDead) {
       image(
@@ -126,6 +126,11 @@ class Piece {
     return { column, sqIndex };
   }
 
+  takes(square) {
+    const index = allPieces.findIndex((p) => p === square.meta.Piece);
+    delete allPieces[index];
+  }
+
   //
   updateCurrentSquare() {
     let square = squares.find(
@@ -134,7 +139,15 @@ class Piece {
         this.spot.sqIndex === sq.coords.sqIndex
     );
 
-    if (square != "undefined") {
+    // TODO: Idk, there's some bugs espacially when it has something to do with the King.
+    if (square !== "undefined") {
+      if (square.meta.hasPiece) {
+        if (square.meta.Piece.piece !== "King") {
+          this.takes(square);
+        } else {
+          return this.square;
+        }
+      }
       square.meta.Piece = this;
       square.meta.hasPiece = true;
       const x = this.spot.pos * this.spot.column;
@@ -161,17 +174,33 @@ class Piece {
   }
 
   check() {
-    if (this.piece !== "King") {
-      let king;
+    let king;
 
+    if (this.piece !== "King") {
       for (let move of this.availableMoves) {
         if (move.meta.Piece !== null) {
-          if (move.meta.Piece.piece === "King") king = move.meta.Piece;
+          if (move.meta.Piece.piece === "King") {
+            king = move.meta.Piece;
+          }
         }
       }
-      if (king !== undefined) king.inCheck = true;
+    }
+
+    if (king !== undefined) {
+      king.inCheck = true;
+      king.inCh();
+
+      setTimeout(() => {
+        for (let move of this.availableMoves) {
+          king.availableMoves = king.availableMoves.filter((m) => m !== move);
+        }
+      }, 0.01);
     }
   }
+
+  // takes() {
+
+  // }
 
   click(mX, mY) {
     const hb = this.hitbox(mX, mY);
@@ -209,38 +238,15 @@ class Piece {
     return possibleMoves;
   }
 
-  // findNeighbours() {
-  //   const n = this.square.currentSquare.meta.squareNeighbours.map(
-  //     (neighbour) => {
-  //       if (neighbour.meta.hasPiece) return neighbour.meta.Piece;
-  //     }
-  //   );
-
-  //   // console.log(n);
-  //   const enemies = this.square.currentSquare.meta.squareNeighbours.map(
-  //     (neighbour) => {
-  //       if (neighbour.meta.hasPiece && neighbour.meta.Piece.color != this.color)
-  //         return neighbour.meta.Piece;
-  //       else return null;
-  //     }
-  //   );
-
-  //   return { n, enemies };
-  // }
-
   hover(mX, mY) {
     const hb = this.hitbox(mX, mY);
     if (hb) {
       cursorHover = true;
       console.log(this);
     } else cursorHover = false;
-
-    // else
   }
 
   drag(mX, mY) {
-    // const hb = this.hitbox(mX, mY);
-
     if (this.clickedOn) {
       canvas.style.cursor = "move";
       this.x = mX;
@@ -297,14 +303,10 @@ class Piece {
 
   onClickUpdate() {
     if (this.clickedOn) {
-      //   this.click(mouseX, mouseY)
       console.log(this);
 
       pieceClickedOn = this;
     }
-    // this.availableMoves = this.getPossibleMoves(
-    //   this.square.currentSquare.meta.squareNeighbours
-    // );
   }
 }
 
@@ -314,7 +316,13 @@ class Bishop extends Piece {
   }
 
   moves() {
-    this.availableMoves = this.diagonalMoves();
+    const { topLeft, topRight, bottomRight, bottomLeft } = this.diagonalMoves();
+    this.availableMoves = [
+      ...topLeft,
+      ...topRight,
+      ...bottomRight,
+      ...bottomLeft,
+    ];
   }
 }
 
@@ -330,8 +338,11 @@ class King extends Piece {
   moves() {
     this.availableMoves = this.allAroundMoves();
     // console.log(this);
+  }
 
+  inCh() {
     if (this.inCheck) console.log("CHECK");
+    this.inCheck = false;
   }
 }
 
@@ -432,11 +443,19 @@ class Queen extends Piece {
   }
 
   moves() {
-    const m = [
-      ...this.diagonalMoves(),
-      ...this.allAroundMoves(),
-      ...this.horizontalAndVerticalMoves(),
+    const { topLeft, topRight, bottomRight, bottomLeft } = this.diagonalMoves();
+    console.log(this.diagonalMoves());
+    const diagonalMoves = [
+      ...topLeft,
+      ...topRight,
+      ...bottomRight,
+      ...bottomLeft,
     ];
+
+    const { horz1, horz2, ver1, ver2 } = this.horizontalAndVerticalMoves();
+    const horizontalAndVerticalMoves = [...horz1, ...horz2, ...ver1, ...ver2];
+
+    const m = [...diagonalMoves, ...horizontalAndVerticalMoves];
     this.availableMoves = [...new Set(m)];
   }
 }
@@ -449,7 +468,9 @@ class Rook extends Piece {
   }
 
   moves() {
-    this.availableMoves = this.horizontalAndVerticalMoves();
+    const { horz1, horz2, ver1, ver2 } = this.horizontalAndVerticalMoves();
+    const horizontalAndVerticalMoves = [...horz1, ...horz2, ...ver1, ...ver2];
+    this.availableMoves = horizontalAndVerticalMoves;
   }
 }
 

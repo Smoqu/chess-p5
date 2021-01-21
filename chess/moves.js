@@ -6,6 +6,7 @@ function horizontalAndVerticalMoves() {
   const m = [];
 
   function horizontal(piece, signColumn) {
+    const sq = [];
     for (let i = 1; i < 9; i++) {
       const column = board[piece.spot.column + signColumn * i];
       if (column === undefined) break;
@@ -14,15 +15,19 @@ function horizontalAndVerticalMoves() {
         if (row.meta.Piece.color === piece.color) break;
         else {
           m.push(row);
+          sq.push(row);
           break;
         }
       }
 
       m.push(row);
+      sq.push(row);
     }
+    return sq;
   }
 
   function vertical(piece, signRow) {
+    const sq = [];
     for (let i = 1; i < 9; i++) {
       const column = board[piece.spot.column];
       if (column === undefined) break;
@@ -32,26 +37,31 @@ function horizontalAndVerticalMoves() {
         if (row.meta.Piece.color === piece.color) break;
         else {
           m.push(row);
+          sq.push(row);
           break;
         }
       }
 
       m.push(row);
+      sq.push(row);
     }
+    return sq;
   }
 
-  horizontal(this, 1);
-  horizontal(this, -1);
-  vertical(this, -1);
-  vertical(this, 1);
+  const horz1 = horizontal(this, 1);
+  const horz2 = horizontal(this, -1);
+  const ver1 = vertical(this, -1);
+  const ver2 = vertical(this, 1);
 
-  return m;
+  return { horz1, horz2, ver1, ver2 };
 }
 
 function diagonalMoves() {
   const m = [];
 
   function initDiagonals(piece, signColumn, signRow) {
+    const sq = [];
+
     for (let tL = 1; tL < 9; tL++) {
       const column = board[piece.spot.column + signColumn * tL];
       if (column === undefined) break;
@@ -61,19 +71,22 @@ function diagonalMoves() {
         if (row.meta.Piece.color === piece.color) break;
         else {
           m.push(row);
+          sq.push(row);
           break;
         }
       }
       m.push(row);
+      sq.push(row);
     }
+    return sq;
   }
 
-  initDiagonals(this, -1, -1);
-  initDiagonals(this, 1, -1);
-  initDiagonals(this, 1, 1);
-  initDiagonals(this, -1, 1);
+  const topLeft = initDiagonals(this, -1, -1);
+  const topRight = initDiagonals(this, 1, -1);
+  const bottomRight = initDiagonals(this, 1, 1);
+  const bottomLeft = initDiagonals(this, -1, 1);
 
-  return m;
+  return { topLeft, topRight, bottomRight, bottomLeft };
 }
 
 const kingMoves = {
@@ -81,7 +94,6 @@ const kingMoves = {
 };
 
 const queenMoves = {
-  allAroundMoves,
   diagonalMoves,
   horizontalAndVerticalMoves,
 };
