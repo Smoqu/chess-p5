@@ -32,6 +32,10 @@ let whiteQueen;
 let darkKing;
 let whiteKing;
 
+let turn;
+let whitePlayer;
+let darkPlayer;
+
 function preload() {
   const p = ["Bishop", "King", "Knight", "Pawn", "Queen", "Rook"];
   for (let i = 0; i < 12; i++) {
@@ -84,6 +88,20 @@ function setup() {
   });
 
   // console.log(piecesImages);
+
+  whitePlayer = new Player("White", pieces[1]);
+  turn = whitePlayer;
+  darkPlayer = new Player("Dark", pieces[0]);
+
+  allPieces.forEach((piece) => {
+    if (piece.color === whitePlayer.color) {
+      piece.player = whitePlayer;
+      piece.adversary = darkPlayer;
+    } else {
+      piece.player = darkPlayer;
+      piece.adversary = whitePlayer;
+    }
+  });
 
   buttonDebug = createButton("Debug");
   buttonCoords = createButton("Show coordinates");
