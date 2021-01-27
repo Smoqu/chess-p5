@@ -148,10 +148,13 @@ class Piece {
     );
 
     // TODO: Idk, there's some bugs espacially when it has something to do with the King.
-    if (square !== "undefined") {
+    if (square !== undefined) {
       if (square.meta.hasPiece) {
         if (square.meta.Piece.piece !== "King") {
+          this.player.eaten.push(square.meta.Piece);
+          this.player.updateEaten();
           this.takes(square);
+          console.log(this.player);
         } else {
           return this.square;
         }
@@ -186,10 +189,8 @@ class Piece {
 
     if (this.piece !== "King") {
       for (let move of this.availableMoves) {
-        if (move.meta.Piece !== null) {
-          if (move.meta.Piece.piece === "King") {
-            king = move.meta.Piece;
-          }
+        if (move.meta.Piece?.piece === "King") {
+          king = move.meta.Piece;
         }
       }
     }
@@ -271,7 +272,6 @@ class Piece {
   highlightLastMove() {
     if (lastPiece === this) {
       const last = this.history.slice(-2);
-      console.log(last);
       for (let el of last) {
         noStroke();
         fill(255, 255, 0, 100);
@@ -281,6 +281,8 @@ class Piece {
           el.square.currentSquare.pos
         );
       }
+
+      // updateEveryMove();
     }
   }
 
@@ -307,6 +309,12 @@ class Piece {
           pieceClickedOn = null;
           lastPiece = this;
           turn = this.adversary;
+
+          const h = this.history.slice(-2);
+          const history = { last: h[0], current: h[1] };
+          everyMove.push(history);
+          console.log("oui", everyMove);
+          updateEveryMove(history);
         } else {
           const { x, y, imageX, imageY } = this.move();
           [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
@@ -445,8 +453,8 @@ class Pawn extends Piece {
     }
 
     const enemies = areEnemies.filter((square) => {
-      if (square !== undefined && square.meta.hasPiece) {
-        if (square.meta.Piece.color !== this.color) return square;
+      if (square?.meta.hasPiece) {
+        if (square.meta.Piece?.color !== this.color) return square;
       }
     });
 

@@ -41,15 +41,19 @@ function preload() {
   for (let i = 0; i < 12; i++) {
     if (i <= 5) {
       let piece = i;
+      const path = `assets/pieces/black/${p[i]}_black.png`;
       darkPieces.images.push({
         piece: p[piece],
-        image: loadImage(`assets/pieces/black/${p[i]}_black.png`),
+        image: loadImage(path),
+        path,
       });
     } else if (i > 5) {
       let piece = i - 6;
+      const path = `assets/pieces/white/${p[i - 6]}_white.png`;
       whitePieces.images.push({
         piece: p[piece],
-        image: loadImage(`assets/pieces/white/${p[i - 6]}_white.png`),
+        image: loadImage(path),
+        path,
       });
     }
   }
@@ -89,9 +93,9 @@ function setup() {
 
   // console.log(piecesImages);
 
-  whitePlayer = new Player("White", pieces[1]);
+  whitePlayer = new Player("White", pieces[1], "José");
   turn = whitePlayer;
-  darkPlayer = new Player("Dark", pieces[0]);
+  darkPlayer = new Player("Dark", pieces[0], "Juan");
 
   allPieces.forEach((piece) => {
     if (piece.color === whitePlayer.color) {
@@ -103,9 +107,9 @@ function setup() {
     }
   });
 
-  buttonDebug = createButton("Debug");
-  buttonCoords = createButton("Show coordinates");
-  buttonHitbox = createButton("Show hitboxes");
+  // buttonDebug = createButton("Debug");
+  // buttonCoords = createButton("Show coordinates");
+  // buttonHitbox = createButton("Show hitboxes");
 }
 
 function draw() {
@@ -118,21 +122,21 @@ function draw() {
     // if (piece.piece === "Pawn") piece.onClickUpdate(false, -1, -1);
   });
 
-  if (debug) {
-    buttonCoords.show();
-    buttonHitbox.show();
-  } else {
-    buttonCoords.hide();
-    buttonHitbox.hide();
-  }
+  // if (debug) {
+  //   buttonCoords.show();
+  //   buttonHitbox.show();
+  // } else {
+  //   buttonCoords.hide();
+  //   buttonHitbox.hide();
+  // }
 
   // image(darkPieces.images[6], 250, 250);
 }
 
 function mousePressed() {
-  buttonDebug.mousePressed(() => (debug = !debug));
-  buttonCoords.mousePressed(() => (showCoords = !showCoords));
-  buttonHitbox.mousePressed(() => (showHitbox = !showHitbox));
+  // buttonDebug.mousePressed(() => (debug = !debug));
+  // buttonCoords.mousePressed(() => (showCoords = !showCoords));
+  // buttonHitbox.mousePressed(() => (showHitbox = !showHitbox));
 
   allPieces.forEach((piece) => {
     piece.click(mouseX, mouseY);

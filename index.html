@@ -20,7 +20,90 @@
     <style>
       body {
         background-color: rgb(27, 27, 27);
+        display: flex;
+        flex-direction: row-reverse;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      }
+
+      .informations {
+        background-color: rgb(59, 59, 59);
+        margin-left: 20px;
+        margin-right: 20px;
+        box-shadow: rgb(32, 32, 32) 0px 0px 20px;
+        display: grid;
+        grid-template-rows: 12.5% 75% 12.5%;
+        grid-template-areas:
+          "playerDark"
+          "moves"
+          "playerWhite";
+      }
+
+      .playerMoves {
+        grid-area: moves;
+        overflow-y: auto;
+      }
+
+      .playerMoves p {
+        color: white;
+        font-weight: bold;
+        padding: 10px;
+      }
+
+      .info {
+        background-color: rgb(29, 29, 29);
+        box-shadow: rgb(27, 27, 27) 0px 2px 20px;
+        display: grid;
+      }
+
+      #name {
+        color: white;
+        font-size: 1.5em;
+        grid-area: name;
+        text-align: center;
+        margin: 5px 0px 5px 0px;
+      }
+
+      #time {
+        grid-area: time;
+        color: white;
+        text-align: center;
+        font-size: 1.5em;
+        margin: 5px 0px 5px 0px;
+      }
+
+      #eaten {
+        grid-area: eaten;
+        height: 20px;
+        padding: 5px;
+      }
+
+      .White {
+        grid-area: playerWhite;
+        grid-template-areas: "eaten eaten" "name time" "after after";
+      }
+
+      .White::after {
+        content: "";
+        grid-area: after;
+        height: 2px;
+        background-color: white;
+        width: 100%;
+      }
+
+      .Dark {
+        grid-area: playerDark;
+        grid-template-areas: "before before" "name time" "eaten eaten";
+      }
+
+      .Dark::before {
+        content: "";
+        grid-area: before;
+        height: 2px;
+        background-color: white;
+        width: 100%;
       }
     </style>
+    <div class="informations"></div>
   </body>
 </html>
