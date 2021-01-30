@@ -1,18 +1,20 @@
-function allAroundMoves() {
-  return this.getPossibleMoves(this.square.currentSquare.meta.squareNeighbours);
+function allAroundMoves(this: Piece) {
+  return this.getPossibleMoves(
+    this.square!.currentSquare.meta.squareNeighbours
+  );
 }
 
-function horizontalAndVerticalMoves() {
+function horizontalAndVerticalMoves(this: Piece) {
   const m = [];
 
-  function horizontal(piece, signColumn) {
+  function horizontal(piece: Piece, signColumn: number) {
     const sq = [];
     for (let i = 1; i < 9; i++) {
       const column = board[piece.spot.column + signColumn * i];
       if (column === undefined) break;
       const row = column[piece.spot.sqIndex];
       if (row.meta.hasPiece) {
-        if (row.meta.Piece.color === piece.color) break;
+        if (row.meta.Piece!.color === piece.color) break;
         else {
           m.push(row);
           sq.push(row);
@@ -26,7 +28,7 @@ function horizontalAndVerticalMoves() {
     return sq;
   }
 
-  function vertical(piece, signRow) {
+  function vertical(piece: Piece, signRow: number) {
     const sq = [];
     for (let i = 1; i < 9; i++) {
       const column = board[piece.spot.column];
@@ -34,7 +36,7 @@ function horizontalAndVerticalMoves() {
       const row = column[piece.spot.sqIndex + signRow * i];
       if (row === undefined) break;
       if (row.meta.hasPiece) {
-        if (row.meta.Piece.color === piece.color) break;
+        if (row.meta.Piece!.color === piece.color) break;
         else {
           m.push(row);
           sq.push(row);
@@ -56,10 +58,10 @@ function horizontalAndVerticalMoves() {
   return { horz1, horz2, ver1, ver2 };
 }
 
-function diagonalMoves() {
+function diagonalMoves(this: Piece) {
   const m = [];
 
-  function initDiagonals(piece, signColumn, signRow) {
+  function initDiagonals(piece: Piece, signColumn: number, signRow: number) {
     const sq = [];
 
     for (let tL = 1; tL < 9; tL++) {
@@ -68,7 +70,7 @@ function diagonalMoves() {
       const row = column[piece.spot.sqIndex + signRow * tL];
       if (row === undefined) break;
       if (row.meta.hasPiece) {
-        if (row.meta.Piece.color === piece.color) break;
+        if (row.meta.Piece!.color === piece.color) break;
         else {
           m.push(row);
           sq.push(row);

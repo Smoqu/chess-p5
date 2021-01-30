@@ -1,41 +1,42 @@
-/// <reference path="./TSDef/p5.global-mode.d.ts" />
+/// <reference path="../TSDef/p5.global-mode.d.ts" />
+/// <reference path="../node_modules/@types/lodash.clonedeep/index.d.ts" />
 let debug = false;
 
-let board;
+let board: Array<Array<Square>>;
 const size = 800;
 
-let canvas;
+let canvas: HTMLCanvasElement | null;
 
-let state;
+let state: State;
 
 // let piece;
-let visualBoard;
+let visualBoard: Board;
 
 let buttonCoords;
 let buttonHitbox;
 let buttonDebug;
 
-let darkPawns;
-let whitePawns;
+let darkPawns: Array<Pawn>;
+let whitePawns: Array<Pawn>;
 
-let darkBishops;
-let whiteBishops;
+let darkBishops: Array<Bishop>;
+let whiteBishops: Array<Bishop>;
 
-let darkKnights;
-let whiteKnights;
+let darkKnights: Array<Knight>;
+let whiteKnights: Array<Knight>;
 
-let darkRooks;
-let whiteRooks;
+let darkRooks: Array<Rook>;
+let whiteRooks: Array<Rook>;
 
-let darkQueen;
-let whiteQueen;
+let darkQueen: Queen;
+let whiteQueen: Queen;
 
-let darkKing;
-let whiteKing;
+let darkKing: King;
+let whiteKing: King;
 
-let turn;
-let whitePlayer;
-let darkPlayer;
+let turn: Player | null;
+let whitePlayer: Player;
+let darkPlayer: Player;
 
 function preload() {
   const p = ["Bishop", "King", "Knight", "Pawn", "Queen", "Rook"];
@@ -173,13 +174,15 @@ function mouseReleased() {
   allPieces.forEach((piece) => {
     piece.released();
     piece.moves();
-    piece.updateForbiddenMoves(state);
+    if (piece.piece === "King") {
+      piece.updateForbiddenMoves(state);
+    }
     piece.check();
   });
 }
 
 function initPieces() {
-  const initPawns = (color, sqIndex, col) => {
+  const initPawns = (color: Array<Pawn>, sqIndex: number, col: string) => {
     for (let pawn = 0; pawn < 8; pawn++) {
       const p = new Pawn(
         "Pawn",
@@ -200,7 +203,7 @@ function initPieces() {
   initPawns(darkPawns, 1, "Dark");
   initPawns(whitePawns, 6, "White");
 
-  const initBishops = (color, sqIndex, col) => {
+  const initBishops = (color: Array<Bishop>, sqIndex: number, col: string) => {
     for (let bishop = 0; bishop < 2; bishop++) {
       const column = bishop === 0 ? 2 : 5;
       const b = new Bishop(
@@ -219,7 +222,7 @@ function initPieces() {
   initBishops(darkBishops, 0, "Dark");
   initBishops(whiteBishops, 7, "White");
 
-  const initKnights = (color, sqIndex, col) => {
+  const initKnights = (color: Array<Knight>, sqIndex: number, col: string) => {
     for (let knight = 0; knight < 2; knight++) {
       const column = knight === 0 ? 1 : 6;
       const k = new Knight(
@@ -237,7 +240,7 @@ function initPieces() {
   initKnights(darkKnights, 0, "Dark");
   initKnights(whiteKnights, 7, "White");
 
-  const initRooks = (color, sqIndex, col) => {
+  const initRooks = (color: Array<Rook>, sqIndex: number, col: string) => {
     for (let rook = 0; rook < 2; rook++) {
       const column = rook === 0 ? 0 : 7;
       const r = new Rook(

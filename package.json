@@ -2,5 +2,8 @@
   "dependencies": {
     "lodash.clonedeep": "^4.5.0",
     "p5": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/lodash.clonedeep": "^4.5.6"
   }
 }

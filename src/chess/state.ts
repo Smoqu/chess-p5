@@ -1,9 +1,13 @@
+// @ts-nocheck
+
 class State {
+  state: Array<Array<Piece>>;
+
   constructor() {
     this.state = [];
   }
 
-  updateState(state) {
+  updateState(state: Array<Piece>) {
     const deep = cloneDeep(state);
 
     this.state.push(deep);
@@ -21,7 +25,7 @@ class State {
     return this.state[this.state.length - 2];
   }
 
-  getAnyState(move) {
+  getAnyState(move: Piece[]) {
     return this.state.filter((m) => m !== move);
   }
 }

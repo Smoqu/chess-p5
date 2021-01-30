@@ -1,9 +1,21 @@
-const divInformations = document.getElementsByClassName("informations")[0];
+// const divInformations = document.getElementsByClassName("informations")[0];
+const divInformations: HTMLElement = document.getElementById("informations")!;
 divInformations.style.width = "100%";
 divInformations.style.height = size + "px";
 
 class Player {
-  constructor(color, pieces, name = "default") {
+  pieces: piece;
+  color: string;
+  name: string;
+
+  eaten: Array<Piece>;
+
+  PContainer: HTMLElement;
+  PTime: HTMLElement;
+  PName: HTMLElement;
+  PEaten: HTMLElement;
+
+  constructor(color: string, pieces: piece, name = "default") {
     this.pieces = pieces;
     this.color = color;
     this.name = name;
@@ -30,7 +42,7 @@ class Player {
     divInformations.appendChild(this.PContainer);
   }
 
-  update(PTimeValue) {
+  update(PTimeValue: string) {
     // this.PTimeValue = PTimeValue;
 
     this.PTime.innerHTML = PTimeValue;
@@ -51,7 +63,7 @@ divPlayersMoves.className = "playerMoves";
 
 const everyMove = [];
 
-function updateEveryMove(last) {
+function updateEveryMove(last: { last: any; current: any }) {
   const lastContainer = document.createElement("div");
   const lastP = document.createElement("p");
 

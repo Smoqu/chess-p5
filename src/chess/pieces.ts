@@ -1,10 +1,12 @@
-let allPieces = [];
+let allPieces: Array<Piece> = [];
 
-let pieceClickedOn;
+let pieceClickedOn: Piece | null;
 
-let lastPiece;
+let lastPiece: Piece;
 
-let pieces = [
+let pieces: Array<piece>;
+
+pieces = [
   {
     color: "Dark",
     pieces: {
@@ -31,13 +33,32 @@ let pieces = [
   },
 ];
 
-let darkPieces = pieces.find((piece) => piece.color === "Dark");
-let whitePieces = pieces.find((piece) => piece.color === "White");
+let darkPieces = pieces.find((piece) => piece.color === "Dark")!;
+let whitePieces = pieces.find((piece) => piece.color === "White")!;
 
 let cursorHover = false;
 
 class Piece {
-  constructor(piece, initialSpot, color) {
+  piece: string;
+  color: string;
+  initialSpot: pieceSpot;
+  spot: pieceSpot;
+  isDead: boolean;
+  square: pieceSquare | undefined;
+  scale: number;
+  clickedOn: boolean;
+  availableMoves: Array<Square>;
+  history: Array<pieceHistory>;
+  player: null | Player;
+  adversary: null | Player;
+  x: number;
+  y: number;
+  imageX: number;
+  imageY: number;
+  imageSize: number;
+  img: image;
+
+  constructor(piece: string, initialSpot: pieceSpot, color: string) {
     // piece = the name of the piece ("Bishop", "Pawn", etc..)
     this.piece = piece;
     // Its color obviously (Black, white)
@@ -73,19 +94,20 @@ class Piece {
       row: this.spot.sqIndex + 1,
       square: this.square,
     });
-
     let { x, y, imageX, imageY } = this.move();
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
 
     // // console.log(this.square);
 
-    this.imageSize = this.spot.pos / (this.scale * 0.5);
+    this.imageSize = this.spot.pos! / (this.scale * 0.5);
 
     // finds the right image for the piece
     if (this.color === "Dark")
-      this.img = darkPieces.images.find((image) => image.piece === this.piece);
+      this.img = darkPieces.images.find((image) => image.piece === this.piece)!;
     else
-      this.img = whitePieces.images.find((image) => image.piece === this.piece);
+      this.img = whitePieces.images.find(
+        (image) => image.piece === this.piece
+      )!;
   }
 
   // Method to show on the canvas, if not dead
@@ -109,32 +131,32 @@ class Piece {
     if (showHitbox) {
       stroke(255, 0, 0);
       line(
-        this.square.x,
-        this.square.y,
-        this.square.x + this.spot.pos,
-        this.square.y + this.spot.pos
+        this.square!.x,
+        this.square!.y,
+        this.square!.x + this.spot.pos!,
+        this.square!.y + this.spot.pos!
       );
-      stroke(0);
+      stroke(0, 0, 0);
     }
   }
 
-  hitbox(mX, mY) {
+  hitbox(mX: number, mY: number) {
     return (
-      mX > this.square.x &&
-      mX < this.square.x + this.spot.pos &&
-      mY > this.square.y &&
-      mY < this.square.y + this.spot.pos
+      mX > this.square!.x &&
+      mX < this.square!.x + this.spot.pos! &&
+      mY > this.square!.y &&
+      mY < this.square!.y + this.spot.pos!
     );
   }
 
-  convertLetterCoord2Coords(letter, row) {
+  convertLetterCoord2Coords(letter: string, row: number) {
     const column = letters.indexOf(letter);
     const sqIndex = row - 1;
 
     return { column, sqIndex };
   }
 
-  takes(square) {
+  takes(square: Square) {
     const index = allPieces.findIndex((p) => p === square.meta.Piece);
     allPieces[index].isDead = true;
     delete allPieces[index];
@@ -151,9 +173,9 @@ class Piece {
     // TODO: Idk, there's some bugs espacially when it has something to do with the King.
     if (square !== undefined) {
       if (square.meta.hasPiece) {
-        if (square.meta.Piece.piece !== "King") {
-          this.player.eaten.push(square.meta.Piece);
-          this.player.updateEaten();
+        if (square.meta.Piece!.piece !== "King") {
+          this.player!.eaten.push(square.meta.Piece!);
+          this.player!.updateEaten();
           this.takes(square);
           // console.log(this.player);
         } else {
@@ -162,8 +184,8 @@ class Piece {
       }
       square.meta.Piece = this;
       square.meta.hasPiece = true;
-      const x = this.spot.pos * this.spot.column;
-      const y = this.spot.pos * this.spot.sqIndex;
+      const x = this.spot.pos! * this.spot.column;
+      const y = this.spot.pos! * this.spot.sqIndex;
 
       return { x, y, currentSquare: square };
     }
@@ -172,37 +194,37 @@ class Piece {
   }
 
   updateFormerSquare() {
-    this.square.currentSquare.meta.Piece = null;
-    this.square.currentSquare.meta.hasPiece = false;
+    this.square!.currentSquare.meta.Piece = null;
+    this.square!.currentSquare.meta.hasPiece = false;
   }
 
   move() {
-    const x = this.square.x + this.spot.pos / 2;
-    const y = this.square.y + this.spot.pos / 2;
-    const imageX = x - this.spot.pos / this.scale;
-    const imageY = y - this.spot.pos / this.scale;
+    const x = this.square!.x + this.spot.pos! / 2;
+    const y = this.square!.y + this.spot.pos! / 2;
+    const imageX = x - this.spot.pos! / this.scale;
+    const imageY = y - this.spot.pos! / this.scale;
 
     return { x, y, imageX, imageY };
   }
 
   check() {
-    let king;
+    let king: King | null | undefined;
 
     if (this.piece !== "King") {
       for (let move of this.availableMoves) {
-        if (move.meta.Piece?.piece === "King") {
-          king = move.meta.Piece;
+        if (move.meta.Piece?.piece! === "King") {
+          king = move.meta.Piece as King;
         }
       }
     }
 
     if (king !== undefined) {
-      king.inCheck = true;
-      king.inCh();
+      king!.inCheck = true;
+      king!.inCh();
 
       setTimeout(() => {
         for (let move of this.availableMoves) {
-          king.availableMoves = king.availableMoves.filter((m) => m !== move);
+          king!.availableMoves = king!.availableMoves.filter((m) => m !== move);
         }
       }, 0.01);
     }
@@ -212,7 +234,7 @@ class Piece {
 
   // }
 
-  click(mX, mY) {
+  click(mX: number, mY: number) {
     const hb = this.hitbox(mX, mY);
 
     if (hb) {
@@ -225,7 +247,7 @@ class Piece {
     this.isDead = true;
   }
 
-  changeSquare(column, sqIndex) {
+  changeSquare(column: number, sqIndex: number) {
     this.spot.column = column;
     this.spot.sqIndex = sqIndex;
     this.spot.letter = letters[column];
@@ -235,20 +257,20 @@ class Piece {
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
   }
 
-  getPossibleMoves(array) {
+  getPossibleMoves(array: Array<Square>) {
     const possibleMoves = [];
     for (let neigh of array) {
       if (!neigh.meta.hasPiece) {
         possibleMoves.push(neigh);
       } else {
-        if (neigh.meta.Piece.color !== this.color) possibleMoves.push(neigh);
+        if (neigh.meta.Piece!.color !== this.color) possibleMoves.push(neigh);
       }
     }
 
     return possibleMoves;
   }
 
-  hover(mX, mY) {
+  hover(mX: number, mY: number) {
     const hb = this.hitbox(mX, mY);
     if (hb) {
       cursorHover = true;
@@ -256,13 +278,13 @@ class Piece {
     } else cursorHover = false;
   }
 
-  drag(mX, mY) {
+  drag(mX: number, mY: number) {
     if (this.clickedOn) {
-      canvas.style.cursor = "move";
+      canvas!.style.cursor = "move";
       this.x = mX;
-      this.imageX = this.x - this.spot.pos / this.scale;
+      this.imageX = this.x - this.spot.pos! / this.scale;
       this.y = mY;
-      this.imageY = this.y - this.spot.pos / this.scale;
+      this.imageY = this.y - this.spot.pos! / this.scale;
     }
   }
 
@@ -277,9 +299,10 @@ class Piece {
         noStroke();
         fill(255, 255, 0, 100);
         rect(
-          el.square.currentSquare.x,
-          el.square.currentSquare.y,
-          el.square.currentSquare.pos
+          el.square!.currentSquare.x,
+          el.square!.currentSquare.y,
+          el.square!.currentSquare.pos,
+          el.square!.currentSquare.pos
         );
       }
 
@@ -288,7 +311,7 @@ class Piece {
   }
 
   released() {
-    canvas.style.cursor = "default";
+    canvas!.style.cursor = "default";
     if (this.availableMoves.length > 0) {
       this.availableMoves.forEach((square) => {
         if (
@@ -334,7 +357,12 @@ class Piece {
       for (let possibleMove of this.availableMoves) {
         noStroke();
         fill(255, 0, 0, 100);
-        rect(possibleMove.x, possibleMove.y, possibleMove.pos);
+        rect(
+          possibleMove.x,
+          possibleMove.y,
+          possibleMove.pos,
+          possibleMove.pos
+        );
       }
     }
   }
@@ -347,14 +375,23 @@ class Piece {
     }
   }
 
-  updateForbiddenMoves() {
-    return;
+  updateForbiddenMoves(s: State): Array<Square> {
+    return [];
   }
 }
 
 class Bishop extends Piece {
-  constructor(piece, initialSpot, color) {
+  constructor(piece: string, initialSpot: pieceSpot, color: string) {
     super(piece, initialSpot, color);
+  }
+
+  diagonalMoves(): diagonalMove {
+    const topLeft: Array<Square> = [];
+    const topRight: Array<Square> = [];
+    const bottomRight: Array<Square> = [];
+    const bottomLeft: Array<Square> = [];
+
+    return { topLeft, topRight, bottomLeft, bottomRight };
   }
 
   moves() {
@@ -371,11 +408,18 @@ class Bishop extends Piece {
 Object.assign(Bishop.prototype, bishopMoves);
 
 class King extends Piece {
-  constructor(piece, initialSpot, color) {
+  inCheck: boolean;
+  forbiddenMoves: Array<Square>;
+
+  constructor(piece: string, initialSpot: pieceSpot, color: string) {
     super(piece, initialSpot, color);
 
     this.inCheck = false;
     this.forbiddenMoves = [];
+  }
+
+  allAroundMoves(): Array<Square> {
+    return [];
   }
 
   moves() {
@@ -389,31 +433,31 @@ class King extends Piece {
       this.inCheck = false;
   }
 
-  updateForbiddenMoves(s) {
-    const currentState = s.getCurrentState();
+  // updateForbiddenMoves(s: State) {
+  //   const currentState = s.getCurrentState();
 
-    let enemyPiecesMoves = currentState.filter(
-      (piece) => piece.color !== this.color && piece.piece !== this.piece
-    );
+  //   let enemyPiecesMoves = currentState.filter(
+  //     (piece) => piece.color !== this.color && piece.piece !== this.piece
+  //   );
 
-    enemyPiecesMoves = enemyPiecesMoves.map((piece) => piece.availableMoves);
+  //   enemyPiecesMoves = enemyPiecesMoves.map((piece) => piece.availableMoves);
 
-    const result = [];
-    for (let p of enemyPiecesMoves) {
-      result.push(...p);
-    }
+  //   const result = [];
+  //   for (let p of enemyPiecesMoves) {
+  //     result.push(...p);
+  //   }
 
-    this.forbiddenMoves = result;
+  //   this.forbiddenMoves = result;
 
-    return result;
-  }
+  //   return result;
+  // }
 }
 
 Object.assign(King.prototype, kingMoves);
 // // console.log(King.prototype);
 
 class Knight extends Piece {
-  constructor(piece, initialSpot, color) {
+  constructor(piece: string, initialSpot: pieceSpot, color: string) {
     super(piece, initialSpot, color);
   }
 
@@ -446,7 +490,7 @@ class Knight extends Piece {
 }
 
 class Pawn extends Piece {
-  constructor(piece, initialSpot, color) {
+  constructor(piece: string, initialSpot: pieceSpot, color: string) {
     super(piece, initialSpot, color);
     this.color = color;
   }
@@ -470,13 +514,13 @@ class Pawn extends Piece {
 
     if (this.color === "White") {
       areEnemies = [
-        this.square.currentSquare.meta.squareNeighbours[0],
-        this.square.currentSquare.meta.squareNeighbours[5],
+        this.square!.currentSquare.meta.squareNeighbours[0],
+        this.square!.currentSquare.meta.squareNeighbours[5],
       ];
     } else {
       areEnemies = [
-        this.square.currentSquare.meta.squareNeighbours[2],
-        this.square.currentSquare.meta.squareNeighbours[7],
+        this.square!.currentSquare.meta.squareNeighbours[2],
+        this.square!.currentSquare.meta.squareNeighbours[7],
       ];
     }
 
@@ -501,8 +545,26 @@ class Pawn extends Piece {
 }
 
 class Queen extends Piece {
-  constructor(piece, initialSpot, color) {
+  constructor(piece: string, initialSpot: pieceSpot, color: string) {
     super(piece, initialSpot, color);
+  }
+
+  diagonalMoves(): diagonalMove {
+    const topLeft: Array<Square> = [];
+    const topRight: Array<Square> = [];
+    const bottomRight: Array<Square> = [];
+    const bottomLeft: Array<Square> = [];
+
+    return { topLeft, topRight, bottomLeft, bottomRight };
+  }
+
+  horizontalAndVerticalMoves(): horizontalAndVerticalMove {
+    const horz1: Array<Square> = [];
+    const horz2: Array<Square> = [];
+    const ver1: Array<Square> = [];
+    const ver2: Array<Square> = [];
+
+    return { horz1, horz2, ver1, ver2 };
   }
 
   moves() {
@@ -526,8 +588,17 @@ class Queen extends Piece {
 Object.assign(Queen.prototype, queenMoves);
 
 class Rook extends Piece {
-  constructor(piece, initialSpot, color) {
+  constructor(piece: string, initialSpot: pieceSpot, color: string) {
     super(piece, initialSpot, color);
+  }
+
+  horizontalAndVerticalMoves(): horizontalAndVerticalMove {
+    const horz1: Array<Square> = [];
+    const horz2: Array<Square> = [];
+    const ver1: Array<Square> = [];
+    const ver2: Array<Square> = [];
+
+    return { horz1, horz2, ver1, ver2 };
   }
 
   moves() {

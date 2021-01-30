@@ -4,7 +4,27 @@ let showCoords = false;
 let showHitbox = false;
 
 class Square {
-  constructor(column, sqIndex, color, letterCoord) {
+  coords: { column: number; sqIndex: number };
+  pos: number;
+  color: number;
+  letterCoord: { letter: string; number: number };
+  x: number;
+  y: number;
+
+  center: { x: number; y: number };
+  highlightNeighbours: boolean;
+  meta: {
+    squareNeighbours: Array<Square>;
+    hasPiece: boolean;
+    Piece: Piece | null;
+  };
+
+  constructor(
+    column: number,
+    sqIndex: number,
+    color: string,
+    letterCoord: { letter: string; number: number }
+  ) {
     this.coords = { column, sqIndex };
     this.pos = size / 8;
     this.color = color === "white" ? 0 : 255;
@@ -25,9 +45,9 @@ class Square {
   }
 
   show() {
-    stroke(0);
-    fill(this.color);
-    rect(this.x, this.y, this.pos);
+    stroke(0, 0, 0);
+    fill(this.color, this.color, this.color);
+    rect(this.x, this.y, this.pos, this.pos);
 
     if (showCoords) {
       fill(0, 0, 255);
@@ -40,8 +60,8 @@ class Square {
     }
 
     if (this.letterCoord.letter === "A" && this.letterCoord.number === 8) {
-      if (this.color === 0) fill(255);
-      else fill(0);
+      if (this.color === 0) fill(255, 255, 255);
+      else fill(0, 0, 0);
       textSize(this.pos / 8);
 
       text(
@@ -53,16 +73,16 @@ class Square {
       this.letterCoord.letter === "A" &&
       this.letterCoord.number !== 8
     ) {
-      if (this.color === 0) fill(255);
-      else fill(0);
+      if (this.color === 0) fill(255, 255, 255);
+      else fill(0, 0, 0);
 
-      text(this.letterCoord.number, this.x, this.y + this.pos * 0.95);
+      text(`${this.letterCoord.number}`, this.x, this.y + this.pos * 0.95);
     }
 
     if (this.letterCoord.number === 8 && this.letterCoord.letter !== "A") {
       textSize(this.pos / 8);
-      if (this.color === 0) fill(255);
-      else fill(0);
+      if (this.color === 0) fill(255, 255, 255);
+      else fill(0, 0, 0);
       text(this.letterCoord.letter, this.x, this.y + this.pos * 0.95);
     }
   }
@@ -87,22 +107,24 @@ class Square {
     }
   }
 
-  highlightNeigh(hb) {
-    this.meta.squareNeighbours.forEach((neigh) => {
-      const co = neigh.color;
-      if (this.highlightNeighbours && hb) {
-        // // console.log("neigh:", neigh);
-        neigh.color = color(255, 0, 0);
-      } else {
-        neigh.color = co;
-      }
-    });
-  }
+  // highlightNeigh(hb: boolean) {
+  //   this.meta.squareNeighbours.forEach((neigh) => {
+  //     const co = neigh.color;
+  //     if (this.highlightNeighbours && hb) {
+  //       // // console.log("neigh:", neigh);
+  //       neigh.color = color(255, 0, 0);
+  //     } else {
+  //       neigh.color = co;
+  //     }
+  //   });
+  // }
 }
 
-let squares = [];
+let squares: Array<Square> = [];
 
 class Board {
+  board: Array<Array<Square>>;
+
   constructor() {
     this.board = new Array(8);
 
@@ -135,7 +157,7 @@ class Board {
     });
   }
 
-  getBoardArray() {
+  getBoardArray(): Array<Array<Square>> {
     return this.board;
   }
 }
