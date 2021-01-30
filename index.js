@@ -1,11 +1,12 @@
 /// <reference path="./TSDef/p5.global-mode.d.ts" />
-
 let debug = false;
 
-let board = new Array(8);
+let board;
 const size = 800;
 
 let canvas;
+
+let state;
 
 // let piece;
 let visualBoard;
@@ -64,8 +65,9 @@ function setup() {
   canvas = document.querySelector(".p5Canvas");
 
   background(50);
-  for (let i = 0; i < 8; i++) board[i] = new Array(8);
+
   visualBoard = new Board();
+  board = visualBoard.getBoardArray();
 
   darkPawns = darkPieces.pieces.Pawns;
   whitePawns = whitePieces.pieces.Pawns;
@@ -79,7 +81,7 @@ function setup() {
   darkRooks = darkPieces.pieces.Rooks;
   whiteRooks = whitePieces.pieces.Rooks;
 
-  // console.log(darkPawns);
+  // // console.log(darkPawns);
 
   squares.forEach((square) => {
     square.getNeighbours();
@@ -91,7 +93,7 @@ function setup() {
     piece.moves();
   });
 
-  // console.log(piecesImages);
+  // // console.log(piecesImages);
 
   whitePlayer = new Player("White", pieces[1], "José");
   turn = whitePlayer;
@@ -107,9 +109,16 @@ function setup() {
     }
   });
 
+  state = new State();
+
+  state.updateState(allPieces);
+  allPieces.forEach((piece) => piece.updateForbiddenMoves(state));
+
   // buttonDebug = createButton("Debug");
   // buttonCoords = createButton("Show coordinates");
   // buttonHitbox = createButton("Show hitboxes");
+
+  // console.log(allPieces);
 }
 
 function draw() {
@@ -164,6 +173,7 @@ function mouseReleased() {
   allPieces.forEach((piece) => {
     piece.released();
     piece.moves();
+    piece.updateForbiddenMoves(state);
     piece.check();
   });
 }

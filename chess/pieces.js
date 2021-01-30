@@ -77,7 +77,7 @@ class Piece {
     let { x, y, imageX, imageY } = this.move();
     [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
 
-    // console.log(this.square);
+    // // console.log(this.square);
 
     this.imageSize = this.spot.pos / (this.scale * 0.5);
 
@@ -136,6 +136,7 @@ class Piece {
 
   takes(square) {
     const index = allPieces.findIndex((p) => p === square.meta.Piece);
+    allPieces[index].isDead = true;
     delete allPieces[index];
   }
 
@@ -154,7 +155,7 @@ class Piece {
           this.player.eaten.push(square.meta.Piece);
           this.player.updateEaten();
           this.takes(square);
-          console.log(this.player);
+          // console.log(this.player);
         } else {
           return this.square;
         }
@@ -167,7 +168,7 @@ class Piece {
       return { x, y, currentSquare: square };
     }
 
-    console.log(square);
+    // console.log(square);
   }
 
   updateFormerSquare() {
@@ -251,7 +252,7 @@ class Piece {
     const hb = this.hitbox(mX, mY);
     if (hb) {
       cursorHover = true;
-      console.log(this);
+      // console.log(this);
     } else cursorHover = false;
   }
 
@@ -313,8 +314,10 @@ class Piece {
           const h = this.history.slice(-2);
           const history = { last: h[0], current: h[1] };
           everyMove.push(history);
-          console.log("oui", everyMove);
+          // console.log("oui", everyMove);
           updateEveryMove(history);
+          state.updateState(allPieces);
+          // console.log(state);
         } else {
           const { x, y, imageX, imageY } = this.move();
           [this.x, this.y, this.imageX, this.imageY] = [x, y, imageX, imageY];
@@ -338,10 +341,14 @@ class Piece {
 
   onClickUpdate() {
     if (this.clickedOn) {
-      console.log(this);
+      // console.log(this);
 
       pieceClickedOn = this;
     }
+  }
+
+  updateForbiddenMoves() {
+    return;
   }
 }
 
@@ -368,21 +375,42 @@ class King extends Piece {
     super(piece, initialSpot, color);
 
     this.inCheck = false;
+    this.forbiddenMoves = [];
   }
 
   moves() {
     this.availableMoves = this.allAroundMoves();
-    // console.log(this);
+    // // console.log(this);
   }
 
   inCh() {
-    if (this.inCheck) console.log("CHECK");
-    this.inCheck = false;
+    if (this.inCheck)
+      // console.log("CHECK");
+      this.inCheck = false;
+  }
+
+  updateForbiddenMoves(s) {
+    const currentState = s.getCurrentState();
+
+    let enemyPiecesMoves = currentState.filter(
+      (piece) => piece.color !== this.color && piece.piece !== this.piece
+    );
+
+    enemyPiecesMoves = enemyPiecesMoves.map((piece) => piece.availableMoves);
+
+    const result = [];
+    for (let p of enemyPiecesMoves) {
+      result.push(...p);
+    }
+
+    this.forbiddenMoves = result;
+
+    return result;
   }
 }
 
 Object.assign(King.prototype, kingMoves);
-// console.log(King.prototype);
+// // console.log(King.prototype);
 
 class Knight extends Piece {
   constructor(piece, initialSpot, color) {
@@ -459,10 +487,10 @@ class Pawn extends Piece {
     });
 
     if (pieceClickedOn === this)
-      console.log(enemies, areEnemies, 4 + 4 * order);
+      // console.log(enemies, areEnemies, 4 + 4 * order);
 
-    m.push(...enemies);
-    // console.log(enemies);
+      m.push(...enemies);
+    // // console.log(enemies);
 
     return m;
   }
@@ -479,7 +507,7 @@ class Queen extends Piece {
 
   moves() {
     const { topLeft, topRight, bottomRight, bottomLeft } = this.diagonalMoves();
-    console.log(this.diagonalMoves());
+    // console.log(this.diagonalMoves());
     const diagonalMoves = [
       ...topLeft,
       ...topRight,

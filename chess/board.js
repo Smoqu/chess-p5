@@ -91,7 +91,7 @@ class Square {
     this.meta.squareNeighbours.forEach((neigh) => {
       const co = neigh.color;
       if (this.highlightNeighbours && hb) {
-        // console.log("neigh:", neigh);
+        // // console.log("neigh:", neigh);
         neigh.color = color(255, 0, 0);
       } else {
         neigh.color = co;
@@ -104,16 +104,27 @@ let squares = [];
 
 class Board {
   constructor() {
-    for (let column = 0; column < board.length; column++) {
+    this.board = new Array(8);
+
+    for (let i = 0; i < 8; i++) this.board[i] = new Array(8);
+
+    for (let column = 0; column < this.board.length; column++) {
       colors.reverse();
       const letter = letters[column];
-      for (let sqIndex = 0; sqIndex < board[column].length; sqIndex++) {
+      console.log("Column", column, letter);
+      for (
+        let sqIndex = this.board[column].length - 1;
+        sqIndex >= 0;
+        sqIndex--
+      ) {
         let squareColor = colors[sqIndex] === 0 ? "white" : "black";
-        board[column][sqIndex] = new Square(column, sqIndex, squareColor, {
+        this.board[column][sqIndex] = new Square(column, sqIndex, squareColor, {
           letter,
           number: sqIndex + 1,
         });
-        squares.push(board[column][sqIndex]);
+        console.log("     Row", sqIndex, this.board[column][sqIndex]);
+
+        squares.push(this.board[column][sqIndex]);
       }
     }
   }
@@ -122,5 +133,9 @@ class Board {
     squares.forEach((square) => {
       square.show();
     });
+  }
+
+  getBoardArray() {
+    return this.board;
   }
 }

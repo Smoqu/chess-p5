@@ -38,7 +38,7 @@ class Player {
 
   updateEaten() {
     const piece = this.eaten[this.eaten.length - 1];
-    console.log("eaten", piece);
+    // console.log("eaten", piece);
     const img = document.createElement("img");
     img.src = piece.img.path;
     img.width, img.style.width, img.height, (img.style.height = "20px");
@@ -55,7 +55,7 @@ function updateEveryMove(last) {
   const lastContainer = document.createElement("div");
   const lastP = document.createElement("p");
 
-  console.log("tout à fait", last);
+  // console.log("tout à fait", last);
   lastP.innerHTML = `${everyMove.length}. ${last.last.letter}${last.last.row}-${last.current.letter}${last.current.row}`;
   lastContainer.appendChild(lastP);
   divPlayersMoves.prepend(lastContainer);
